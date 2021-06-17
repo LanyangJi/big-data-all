@@ -1,0 +1,8 @@
+# es服务端地址
+spring:
+  elasticsearch:
+    rest:
+      uris: linux01:9200
+logging:
+  level:
+    cn.jly.boot.springdataelasticsearch: debug

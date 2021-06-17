@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cn.jly.bigdata</groupId>
+    <artifactId>big-data-all</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>module01-hadoop</module>
+        <module>module02-zookeeper</module>
+        <module>module03-hive</module>
+        <module>module04-hbase</module>
+        <module>module05-kafka</module>
+        <module>module06-scala3</module>
+        <module>module07-protobuf</module>
+        <module>module08-jvm</module>
+        <module>module09-spark3</module>
+        <module>module10-flink-java</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+</project>
