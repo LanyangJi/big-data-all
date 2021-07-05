@@ -19,6 +19,8 @@
         <module>module08-jvm</module>
         <module>module09-spark3</module>
         <module>module10-flink-java</module>
+        <module>module15-util-collection</module>
+        <module>module11-flink-scala</module>
     </modules>
 
     <properties>

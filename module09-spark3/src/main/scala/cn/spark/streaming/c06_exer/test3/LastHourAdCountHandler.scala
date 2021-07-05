@@ -22,7 +22,7 @@ object LastHourAdCountHandler {
    * @param filterAdDStream
    * @return
    */
-  def getAdHourMintToCount(filterAdDStream: DStream[AdsLog]) = {
+  def getAdHourMintToCount(filterAdDStream: DStream[AdsLog]): DStream[(String, List[(String, Long)])] = {
     // 1. 开窗
     val windowDStream: DStream[AdsLog] = filterAdDStream.window(Minutes(2))
 

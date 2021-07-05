@@ -7,7 +7,6 @@ import org.apache.spark.streaming.{Seconds, StreamingContext, StreamingContextSt
 
 import java.net.URI
 import java.util.concurrent.TimeUnit
-import scala.util.control.Breaks.breakable
 
 /**
  * 流式任务需要 7*24 小时执行，但是有时涉及到升级代码需要主动停止程序，但是分
@@ -26,7 +25,8 @@ object GracefullyShutdownDemo {
 
     val streamingContext: StreamingContext = StreamingContext.getOrCreate("spark-streaming-checkpoint2", createSSC)
 
-    // 监控并优雅关机
+    // 监控并优雅关机 -> 计算节点不再接受新的数据，而是把现有数据处理完毕再关机
+    // 需要创建新的线程进行优雅关闭
     new Thread(new MonitorStop(streamingContext)).start()
 
     streamingContext.start()
