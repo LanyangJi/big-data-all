@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @packageName cn.jly.bigdata.flink.datastream.c02_source
  * @className D04_CustomSource
  */
-public class D04_CustomSource {
+public class D04_CustomSocketSource {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
