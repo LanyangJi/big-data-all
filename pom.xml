@@ -21,6 +21,7 @@
         <module>module10-flink-java</module>
         <module>module15-util-collection</module>
         <module>module11-flink-scala</module>
+        <module>module16-juc</module>
     </modules>
 
     <properties>

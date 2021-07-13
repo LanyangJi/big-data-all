@@ -9,6 +9,12 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import java.util.Properties;
 
 /**
+ * <dependency>
+ *      <groupId>org.apache.flink</groupId>
+ *      <artifactId>flink-connector-kafka_2.12</artifactId>
+ *      <version>${flink.version}</version>
+ * </dependency>
+ *
  * @author jilanyang
  * @date 2021/7/1 14:25
  * @packageName cn.jly.bigdata.flink.datastream.c02_source
