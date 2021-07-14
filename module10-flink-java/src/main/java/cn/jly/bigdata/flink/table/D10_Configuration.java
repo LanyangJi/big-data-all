@@ -19,11 +19,11 @@ import java.time.ZoneId;
  * @packageName cn.jly.bigdata.flink.table
  * @className D02_Configuration
  */
-public class D02_Configuration {
+public class D10_Configuration {
     public static void main(String[] args) throws Exception {
         // 创建流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        // 早定设定配置，在转换成table api之前
+        // 早点设定配置，在转换成table api之前
         env.setMaxParallelism(256);
         //env.getConfig().addDefaultKryoSerializer(MyCustomType.class, CustomKryoSerializer.class);
         env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
