@@ -2,7 +2,6 @@ package cn.jly.bigdata.flink.datastream.c03_transform;
 
 import cn.jly.bigdata.flink.datastream.beans.SensorReading;
 import com.alibaba.fastjson.JSON;
-import org.apache.calcite.rel.core.Values;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
