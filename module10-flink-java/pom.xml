@@ -128,6 +128,14 @@ under the License.
             <version>${flink.version}</version>
         </dependency>
 
+        <!--        flink处理json     -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-json</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+
         <!-- Add connector dependencies here. They must be in the default scope (compile). -->
 
         <!-- Example:

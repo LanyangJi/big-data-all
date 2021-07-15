@@ -4,14 +4,11 @@ import cn.jly.bigdata.flink.datastream.beans.SensorReading;
 import com.alibaba.fastjson.JSON;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.shaded.netty4.io.netty.handler.codec.http2.Http2Exception;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.Table;
-import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
@@ -19,9 +16,9 @@ import org.apache.flink.types.Row;
  * @author lanyangji
  * @date 2021/7/8 20:05
  * @packageName cn.jly.bigdata.flink.table
- * @className D01_CreateTable
+ * @className D01_CreateStreamTableEnvironment
  */
-public class D01_CreateTableEnvironment {
+public class D01_CreateStreamTableEnvironment {
     public static void main(String[] args) throws Exception {
         // 方式一：
         // 环境设置对象
@@ -88,6 +85,6 @@ public class D01_CreateTableEnvironment {
         // +I[sensor-1, 2000, 20.6] 插入之后， -U是更新之前，+U是更新之后
         outputDataStream.printToErr();
 
-        env.execute("D01_CreateTableEnvironment");
+        env.execute("D01_CreateStreamTableEnvironment");
     }
 }
