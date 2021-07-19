@@ -135,6 +135,12 @@ under the License.
             <version>${flink.version}</version>
         </dependency>
 
+        <!--        flink处理csv      -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-csv</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
 
         <!-- Add connector dependencies here. They must be in the default scope (compile). -->
 

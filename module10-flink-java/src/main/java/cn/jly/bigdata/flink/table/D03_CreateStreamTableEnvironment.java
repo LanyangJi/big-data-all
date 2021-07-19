@@ -13,12 +13,17 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
 
 /**
+ * 动态表的概念
+ * 流数据的每一条记录都是动态表的新的行
+ * 官方说法：为了使用关系查询处理流，必须将其转换成 Table。从概念上讲，流的每条记录都被解释为对结果表的 INSERT 操作。
+ * 本质上我们正在从一个 INSERT-only 的 changelog 流构建表。
+ *
  * @author lanyangji
  * @date 2021/7/8 20:05
  * @packageName cn.jly.bigdata.flink.table
  * @className D01_CreateStreamTableEnvironment
  */
-public class D01_CreateStreamTableEnvironment {
+public class D03_CreateStreamTableEnvironment {
     public static void main(String[] args) throws Exception {
         // 方式一：
         // 环境设置对象
@@ -85,6 +90,6 @@ public class D01_CreateStreamTableEnvironment {
         // +I[sensor-1, 2000, 20.6] 插入之后， -U是更新之前，+U是更新之后
         outputDataStream.printToErr();
 
-        env.execute("D01_CreateStreamTableEnvironment");
+        env.execute("D03_CreateStreamTableEnvironment");
     }
 }

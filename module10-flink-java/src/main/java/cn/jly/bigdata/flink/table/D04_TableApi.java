@@ -18,7 +18,7 @@ import static org.apache.flink.table.api.Expressions.$;
  * @author jilanyang
  * @date 2021年7月14日22:21:51
  */
-public class D02_TableApi {
+public class D04_TableApi {
     public static void main(String[] args) throws Exception {
         // 创建流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -58,6 +58,6 @@ public class D02_TableApi {
         tableEnv.toChangelogStream(sqlResTable)
                 .printToErr("示例2：sql方式");
 
-        env.execute("D02_TableApi");
+        env.execute("D04_TableApi");
     }
 }

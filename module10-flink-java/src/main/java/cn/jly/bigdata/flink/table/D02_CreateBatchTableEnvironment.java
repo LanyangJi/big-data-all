@@ -1,10 +1,8 @@
 package cn.jly.bigdata.flink.table;
 
-import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.table.api.*;
-import org.apache.flink.table.descriptors.ConnectorDescriptor;
-
-import java.util.Map;
+import org.apache.flink.table.api.EnvironmentSettings;
+import org.apache.flink.table.api.Table;
+import org.apache.flink.table.api.TableEnvironment;
 
 import static org.apache.flink.table.api.Expressions.$;
 
@@ -19,7 +17,7 @@ import static org.apache.flink.table.api.Expressions.$;
  * @author jilanyang
  * @date 2021年7月15日22:42:56
  */
-public class D04_CreateBatchTableEnvironment {
+public class D02_CreateBatchTableEnvironment {
     public static void main(String[] args) throws Exception {
         EnvironmentSettings envSettings = EnvironmentSettings.newInstance()
                 .inBatchMode()
