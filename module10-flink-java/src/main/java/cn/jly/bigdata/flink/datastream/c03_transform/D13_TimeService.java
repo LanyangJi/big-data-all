@@ -54,11 +54,11 @@ public class D13_TimeService {
         @Override
         public void open(Configuration parameters) throws Exception {
             this.lastTempState = getRuntimeContext().getState(
-                    new ValueStateDescriptor<Double>("last_temp_state", Double.class)
+                    new ValueStateDescriptor<>("last_temp_state", Double.class)
             );
 
             this.timerTsState = getRuntimeContext().getState(
-                    new ValueStateDescriptor<Long>("timer_ts_state", Long.class)
+                    new ValueStateDescriptor<>("timer_ts_state", Long.class)
             );
         }
 

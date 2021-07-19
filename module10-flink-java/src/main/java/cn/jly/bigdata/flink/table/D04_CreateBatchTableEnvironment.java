@@ -21,10 +21,6 @@ import static org.apache.flink.table.api.Expressions.$;
  */
 public class D04_CreateBatchTableEnvironment {
     public static void main(String[] args) throws Exception {
-
-        // 批处理环境
-        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-
         EnvironmentSettings envSettings = EnvironmentSettings.newInstance()
                 .inBatchMode()
                 .build();
@@ -49,7 +45,5 @@ public class D04_CreateBatchTableEnvironment {
 
         // 输出到输出表
         groupTable.executeInsert("tbl_sensor_out");
-
-        env.execute("D04_CreateBatchTableEnvironment");
     }
 }
