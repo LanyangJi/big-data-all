@@ -17,6 +17,12 @@ import org.apache.flink.types.Row;
  * 流数据的每一条记录都是动态表的新的行
  * 官方说法：为了使用关系查询处理流，必须将其转换成 Table。从概念上讲，流的每条记录都被解释为对结果表的 INSERT 操作。
  * 本质上我们正在从一个 INSERT-only 的 changelog 流构建表。
+ * <p>
+ * 常规表 VS 视图
+ * 1. 常规表（Table）一般可以用来描述外部数据，比如文件、数据库或消息队列的数据，也可以直接从DataStream转换而来
+ * 注意：Table API作为接口，通常使用Table对象
+ * 2. 视图（View）可以从现有的表中创建，通常是table API或者SQL查询的一个结果集
+ * 注意：SQL更多面向view视图
  *
  * @author lanyangji
  * @date 2021/7/8 20:05

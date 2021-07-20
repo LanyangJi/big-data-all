@@ -19,7 +19,7 @@ import java.time.ZoneId;
  * @packageName cn.jly.bigdata.flink.table
  * @className D02_Configuration
  */
-public class D10_Configuration {
+public class D99_Configuration {
     public static void main(String[] args) throws Exception {
         // 创建流执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
