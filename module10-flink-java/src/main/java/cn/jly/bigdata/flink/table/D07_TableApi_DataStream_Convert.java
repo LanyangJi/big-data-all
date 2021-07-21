@@ -3,6 +3,7 @@ package cn.jly.bigdata.flink.table;
 import cn.jly.bigdata.flink.datastream.beans.SensorReading;
 import com.alibaba.fastjson.JSON;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -18,7 +19,7 @@ import org.apache.flink.types.Row;
  * 在DataStream和Table API之间切换会增加一些转换开销。
  * 例如，部分处理二进制数据的表运行时的内部数据结构(如RowData)需要转换为更用户友好的数据结构(如Row)。
  * 通常，这个开销可以忽略，但是这里为了完整性而提到它。
- *
+ * <p>
  * 下面的代码展示了如何在两个api之间来回切换的示例。表的列名和类型自动从DataStream的TypeInformation派生出来。
  * 由于DataStream API本身不支持变更日志处理，因此代码在流到表和表到流转换期间假定仅追加/仅插入语义。
  *
@@ -65,7 +66,8 @@ public class D07_TableApi_DataStream_Convert {
         每个结果行代表一个变更日志中的条目，该条目带有一个变更标志，可以通过对其调用row.getKind()进行查询。
         在这个例子中，Alice的第二个分数在(-U)更改之前和(+U)更改之后创建更新。
          */
-        DataStream<Row> queryDs = tableEnv.toChangelogStream(queryTable);
+        // DataStream<Row> queryDs = tableEnv.toChangelogStream(queryTable);
+        DataStream<Tuple2<Boolean, Row>> queryDs = tableEnv.toRetractStream(queryTable, Row.class);
 
         // 7. 打印
         queryDs.printToErr();
