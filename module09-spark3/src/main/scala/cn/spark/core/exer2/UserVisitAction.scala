@@ -13,7 +13,7 @@ package cn.spark.core.exer2
  * 间采用逗号分隔，如果本次不是下单行为，则数据采用 null 表示
  * ➢  支付行为和下单行为类似
  *
- * @author Administrator
+ * @author jilanyang
  * @date 2021/6/17 0017 11:06
  * @packageName cn.spark.core.exer2 
  * @className UserVisitAction
