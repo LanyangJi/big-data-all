@@ -142,7 +142,11 @@ under the License.
             <version>${flink.version}</version>
         </dependency>
 
-        <!-- Add connector dependencies here. They must be in the default scope (compile). -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
+        </dependency><!-- Add connector dependencies here. They must be in the default scope (compile). -->
 
         <!-- Example:
 
