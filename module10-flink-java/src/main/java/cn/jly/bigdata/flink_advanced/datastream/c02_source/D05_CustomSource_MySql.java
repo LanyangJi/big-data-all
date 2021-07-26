@@ -1,8 +1,6 @@
 package cn.jly.bigdata.flink_advanced.datastream.c02_source;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import cn.jly.bigdata.flink_advanced.datastream.beans.TblUser;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -12,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Objects;
 
 /**
  * 实际开发中,经常会实时接收一些数据,要和MySQL中存储的一些规则进行匹配,那么这时候就可以使用Flink自定义数据源从MySQL中读取数据
@@ -114,12 +113,5 @@ public class D05_CustomSource_MySql {
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TblUser {
-        private Integer id;
-        private String name;
-        private Integer age;
-    }
+
 }

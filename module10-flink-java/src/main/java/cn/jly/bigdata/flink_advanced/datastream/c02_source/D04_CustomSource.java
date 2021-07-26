@@ -1,18 +1,14 @@
 package cn.jly.bigdata.flink_advanced.datastream.c02_source;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
 
-import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -77,7 +73,7 @@ public class D04_CustomSource {
                 String createTime = dateTimeFormatter.format(LocalDateTime.now());
 
                 // 写出去
-                sourceContext.collect(Order.builder().id(orderId).userId(userId).money(money).createTime(createTime).build());
+                sourceContext.collect(new Order(orderId, userId, money, createTime));
 
                 // 每隔一秒
                 Thread.sleep(1000L);
@@ -90,14 +86,77 @@ public class D04_CustomSource {
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
     public static class Order {
         private String id;
         private Integer userId;
         private double money;
         private String createTime;
+
+        public Order() {
+        }
+
+        public Order(String id, Integer userId, double money, String createTime) {
+            this.id = id;
+            this.userId = userId;
+            this.money = money;
+            this.createTime = createTime;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Order order = (Order) o;
+            return Double.compare(order.money, money) == 0 && Objects.equals(id, order.id) && Objects.equals(userId, order.userId) && Objects.equals(createTime, order.createTime);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, userId, money, createTime);
+        }
+
+        @Override
+        public String toString() {
+            return "Order{" +
+                    "id='" + id + '\'' +
+                    ", userId=" + userId +
+                    ", money=" + money +
+                    ", createTime='" + createTime + '\'' +
+                    '}';
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public Integer getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Integer userId) {
+            this.userId = userId;
+        }
+
+        public double getMoney() {
+            return money;
+        }
+
+        public void setMoney(double money) {
+            this.money = money;
+        }
+
+        public String getCreateTime() {
+            return createTime;
+        }
+
+        public void setCreateTime(String createTime) {
+            this.createTime = createTime;
+        }
+
+
     }
 }
