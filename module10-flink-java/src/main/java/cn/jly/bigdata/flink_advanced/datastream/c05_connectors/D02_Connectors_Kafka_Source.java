@@ -9,9 +9,7 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.Properties;
-import java.util.Random;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * Flink官方连接器之Kafka
