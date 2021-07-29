@@ -196,6 +196,8 @@ under the License.
             <version>1.11.1</version>
         </dependency>
 
+        <!--        -->
+
         <!-- Add connector dependencies here. They must be in the default scope (compile). -->
 
         <!-- Example:
