@@ -47,6 +47,10 @@ import java.util.regex.Pattern;
  * 1. 主题列表，订阅主题列表中所有分区的消息。例如：
  * KafkaSource.builder().setTopics("topic-a", "topic-b")
  *
+ * 注意：！！！！！！！！！！！！！
+ *      另外还有一种基础传统的source function实现kafka source的方式，
+ *      在{@link D02_Connectors_Kafka_SourceFunction}中
+ *
  * @author jilanyang
  * @date 2021/7/27 16:45
  * @package cn.jly.bigdata.flink_advanced.datastream.c05_connectors
@@ -62,9 +66,20 @@ public class D02_Connectors_Kafka_Source {
         Properties properties = new Properties();
         // 有offset则从offset中开始消费，没有则从最新的位置开始消费；earliest有offset从记录的位置开始消费，没有则从最开始的位置消费
         // properties.setProperty("auto.offset.reset", "latest");
-        // 会开启一个后台线程每隔5秒检测一下kafka的分区情况，实现动态分区监测
-        properties.setProperty("flink.partition-discovery.interval-millis", "5000");
-        // 开启自动提交（提交到默认主题中__consumer_offsets，后续学习了checkpoint后，会随着checkpoint存储在checkpoint和默认主题中）
+        /*
+            会开启一个后台线程每隔5秒检测一下kafka的分区情况，实现动态分区监测
+            为了在不重新启动Flink作业的情况下处理主题扩展或主题创建等场景，
+            可以将Kafka源配置为在提供的主题分区订阅模式下定期发现新分区。
+            要启用分区发现，请为partition.discovery.interval.ms属性设置一个非负值：
+            默认情况下禁用分区发现。您需要显式设置分区发现间隔以启用此功能。
+         */
+        properties.setProperty("partition.discovery.interval.ms", "5000");
+        /*
+         开启自动提交（提交到默认主题中__consumer_offsets，后续学习了checkpoint后，会随着checkpoint存储在checkpoint和默认主题中）
+         Kafka source在检查点完成时提交当前消耗的偏移量，以确保Flink的检查点状态与Kafka代理上提交的偏移量之间的一致性。
+            如果未启用检查点，则Kafka源依赖于Kafka使用者的内部自动定期偏移提交逻辑，该逻辑由Kafka使用者属性中的enable.auto.commit和auto.commit.interval.ms配置。
+            注意，Kafka源代码不依赖于提交的偏移量来实现容错。提交偏移量仅用于公开消费者和消费组的进度以进行监视。
+         */
         properties.setProperty("enable.auto.commit", "true");
         // 自动提交时间间隔
         properties.setProperty("auto.commit.interval.ms", "2000");
@@ -75,11 +90,20 @@ public class D02_Connectors_Kafka_Source {
                 // .setTopicPattern(Pattern.compile("connectors-topic*"))
                 .setTopics("flink-test")
                 .setGroupId(UUID.randomUUID().toString())
+                // 没设置的话，earliest也是默认值
                 .setStartingOffsets(OffsetsInitializer.earliest())
                 .setValueOnlyDeserializer(new SimpleStringSchema())
                 .setProperties(properties)
                 .build();
 
+        /*
+            默认情况下，记录将使用Kafka ConsumerRecord中嵌入的时间戳作为事件时间。
+            您可以定义自己的水印策略，从记录本身提取事件时间，并向下游发出水印：
+            env.fromSource(kafkaSource, new CustomWatermarkStrategy(), "Kafka Source With Custom Watermark Strategy")
+
+            文档：
+            https://ci.apache.org/projects/flink/flink-docs-release-1.13/docs/dev/datastream/event-time/generating_watermarks/
+         */
         DataStreamSource<String> kafkaDs
                 = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "kafka_source");
 
