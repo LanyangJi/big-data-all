@@ -33,7 +33,7 @@ public class D04_CustomSource {
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
 
         // 由于这边实现的是支持并行化的数据源，因此在不设置并行度的情况下，默认是按照本机最大线程数作为并行度
-        DataStreamSource<Order> orderDS = env.addSource(new MyOrderSource());
+        DataStreamSource<TblOrder> orderDS = env.addSource(new MyOrderSource());
 
         // 打印
         orderDS.print();
@@ -46,7 +46,7 @@ public class D04_CustomSource {
      * <p>
      * 测试案例：每隔一秒生成一条订单信息
      */
-    public static class MyOrderSource extends RichParallelSourceFunction<Order> {
+    public static class MyOrderSource extends RichParallelSourceFunction<TblOrder> {
         private Boolean flag = Boolean.TRUE;
 
         /**
@@ -56,7 +56,7 @@ public class D04_CustomSource {
          * @throws Exception
          */
         @Override
-        public void run(SourceContext<Order> sourceContext) throws Exception {
+        public void run(SourceContext<TblOrder> sourceContext) throws Exception {
             Random random = new Random();
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             // double值只保留2位小数
@@ -73,7 +73,7 @@ public class D04_CustomSource {
                 String createTime = dateTimeFormatter.format(LocalDateTime.now());
 
                 // 写出去
-                sourceContext.collect(new Order(orderId, userId, money, createTime));
+                sourceContext.collect(new TblOrder(orderId, userId, money, createTime));
 
                 // 每隔一秒
                 Thread.sleep(1000L);
@@ -86,16 +86,16 @@ public class D04_CustomSource {
         }
     }
 
-    public static class Order {
+    public static class TblOrder {
         private String id;
         private Integer userId;
         private double money;
         private String createTime;
 
-        public Order() {
+        public TblOrder() {
         }
 
-        public Order(String id, Integer userId, double money, String createTime) {
+        public TblOrder(String id, Integer userId, double money, String createTime) {
             this.id = id;
             this.userId = userId;
             this.money = money;
@@ -106,7 +106,7 @@ public class D04_CustomSource {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Order order = (Order) o;
+            TblOrder order = (TblOrder) o;
             return Double.compare(order.money, money) == 0 && Objects.equals(id, order.id) && Objects.equals(userId, order.userId) && Objects.equals(createTime, order.createTime);
         }
 
