@@ -13,16 +13,19 @@ import java.util.Objects;
 public class Order {
     private String orderId;
     private String userId;
-    private Long timestamp;
+    /**
+     * event time
+     */
+    private Long createTime;
     private double money;
 
     public Order() {
     }
 
-    public Order(String orderId, String userId, Long timestamp, double money) {
+    public Order(String orderId, String userId, Long createTime, double money) {
         this.orderId = orderId;
         this.userId = userId;
-        this.timestamp = timestamp;
+        this.createTime = createTime;
         this.money = money;
     }
 
@@ -31,7 +34,7 @@ public class Order {
         return "Order{" +
                 "orderId='" + orderId + '\'' +
                 ", userId='" + userId + '\'' +
-                ", timestamp=" + timestamp +
+                ", timestamp=" + createTime +
                 ", money=" + money +
                 '}';
     }
@@ -41,12 +44,12 @@ public class Order {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Order order = (Order) o;
-        return Double.compare(order.money, money) == 0 && Objects.equals(orderId, order.orderId) && Objects.equals(userId, order.userId) && Objects.equals(timestamp, order.timestamp);
+        return Double.compare(order.money, money) == 0 && Objects.equals(orderId, order.orderId) && Objects.equals(userId, order.userId) && Objects.equals(createTime, order.createTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(orderId, userId, timestamp, money);
+        return Objects.hash(orderId, userId, createTime, money);
     }
 
     public String getOrderId() {
@@ -65,12 +68,12 @@ public class Order {
         this.userId = userId;
     }
 
-    public Long getTimestamp() {
-        return timestamp;
+    public Long getCreateTime() {
+        return createTime;
     }
 
-    public void setTimestamp(Long timestamp) {
-        this.timestamp = timestamp;
+    public void setCreateTime(Long createTime) {
+        this.createTime = createTime;
     }
 
     public double getMoney() {
