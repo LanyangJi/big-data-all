@@ -1,11 +1,10 @@
-package cn.jly.bigdata.flink_advanced.datastream.c06_4cores_window;
+package cn.jly.bigdata.flink_advanced.datastream.c07_4cores_time_watermark;
 
 import cn.jly.bigdata.flink_advanced.datastream.beans.Order;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -18,7 +17,6 @@ import org.apache.flink.util.Collector;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.TimeUnit;
 
 /**
  * watermark
@@ -44,6 +42,8 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * !!!!! 注意
  * 数据被flink线程处理，在多并行度的情况下，watermark对其会取所有线程中最小的watermark来作为当前水印
+ * <p>
+ * ！！！ 在新版本中，默认的时间类型就是使用事件时间 event time
  *
  * <p>
  * <p>
@@ -51,11 +51,11 @@ import java.util.concurrent.TimeUnit;
  * 每个5秒，计算5秒内，每个用户的订单总额，并借助watermark解决一定程度上的数据延迟和乱序
  *
  * @author jilanyang
- * @package cn.jly.bigdata.flink_advanced.datastream.c06_4cores_window
- * @class D06_EventTime_Watermark
+ * @package cn.jly.bigdata.flink_advanced.datastream.c07_4cores_time_watermark
+ * @class D06_Window_EventTime_Watermark
  * @date 2021/7/29 21:30
  */
-public class D06_EventTime_Watermark {
+public class D06_Window_EventTime_Watermark {
     public static void main(String[] args) throws Exception {
         ParameterTool tool = ParameterTool.fromArgs(args);
         String host = tool.get("host", "linux01");
@@ -83,6 +83,14 @@ public class D06_EventTime_Watermark {
                 });
 
         // 开窗
+        /*
+            窗口计算公式：TumblingEventTimeWindows#assignWindows#TimeWindow.getWindowStartWithOffset
+            public static long getWindowStartWithOffset(long timestamp, long offset, long windowSize) {
+                return timestamp - (timestamp - offset + windowSize) % windowSize;
+            }
+            当前时间戳是第 7 秒，windowSize窗口大小为5秒，所以窗口起始偏移量为7-（7 - 0 + 5）% 5 = 5
+            所以7属于的窗口即为[5,10)
+         */
         SingleOutputStreamOperator<Tuple2<String, Double>> windowDs =
                 orderDs.assignTimestampsAndWatermarks(
                                 // 允许3秒的数据延迟和乱序
@@ -90,7 +98,7 @@ public class D06_EventTime_Watermark {
                                         .withTimestampAssigner(new SerializableTimestampAssigner<Order>() {
                                             @Override
                                             public long extractTimestamp(Order order, long recordTimestamp) {
-                                                return order.getTimestamp();
+                                                return order.getCreateTime();
                                             }
                                         })
 
@@ -111,6 +119,6 @@ public class D06_EventTime_Watermark {
         // 输出统计结果
         windowDs.printToErr();
 
-        env.execute("D06_EventTime_Watermark");
+        env.execute("D06_Window_EventTime_Watermark");
     }
 }
