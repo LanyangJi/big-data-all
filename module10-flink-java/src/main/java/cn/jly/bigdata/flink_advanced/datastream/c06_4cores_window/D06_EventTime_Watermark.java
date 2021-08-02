@@ -68,7 +68,7 @@ public class D06_EventTime_Watermark {
         env.setParallelism(1);
 
         // order source
-        SingleOutputStreamOperator<Order> orderDs = env.socketTextStream(host, port, ",")
+        SingleOutputStreamOperator<Order> orderDs = env.socketTextStream(host, port)
                 .map(new MapFunction<String, Order>() {
                     @Override
                     public Order map(String value) throws Exception {
