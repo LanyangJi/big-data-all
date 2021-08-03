@@ -21,7 +21,7 @@ import java.time.Duration;
 
 /**
  * 注意
- * 数据被flink线程处理，在多并行度的情况下，watermark对齐会取所有线程中最小的watermark来作为当前水印
+ * 数据被flink线程处理，在多并行度的情况下，watermark对其会取所有线程中最小的watermark来作为当前水印
  *
  * @author lanyangji
  * @date 2021/7/6 15:23

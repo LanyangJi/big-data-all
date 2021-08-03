@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package cn.jly.bigdata.flink_advanced.datastream.beans;
+
+message WordCount {
+  string word = 1;
+  int64 count = 2;
+}
