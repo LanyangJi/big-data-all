@@ -1,9 +1,11 @@
 package cn.jly.bigdata.flink_advanced.table;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.jly.bigdata.flink_advanced.datastream.beans.Order;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -14,6 +16,8 @@ import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.Tumble;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.types.Row;
+import org.apache.flink.types.RowKind;
+import org.apache.flink.util.Collector;
 
 import java.time.Duration;
 
@@ -21,6 +25,15 @@ import static org.apache.flink.table.api.Expressions.$;
 import static org.apache.flink.table.api.Expressions.lit;
 
 /**
+ * 使用Flink SQL来统计5秒内 每个用户的 订单总数、订单的最大金额、订单的最小金额
+ * 也就是每隔5秒统计最近5秒的每个用户的订单总数、订单的最大金额、订单的最小金额
+ * 上面的需求使用流处理的Window的基于时间的滚动窗口就可以搞定!
+ * 那么接下来使用FlinkTable&SQL-API来实现
+ * <p>
+ * 使用事件时间+Watermark+Flink SQL和Table中的window
+ *
+ * 这里使用table api的方式
+ *
  * @author jilanyang
  * @package cn.jly.bigdata.flink_advanced.table
  * @class D04_TableApi_Window
@@ -29,7 +42,7 @@ import static org.apache.flink.table.api.Expressions.lit;
 public class D04_TableApi_Window {
     public static void main(String[] args) throws Exception {
         ParameterTool tool = ParameterTool.fromArgs(args);
-        String host = tool.get("host", "localhost");
+        String host = tool.get("host", "linux01");
         int port = tool.getInt("port", 9999);
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -81,8 +94,45 @@ public class D04_TableApi_Window {
 
         // 转换输出
         DataStream<Tuple2<Boolean, Row>> resDs = tableEnv.toRetractStream(resTable, Row.class);
-        resDs.print();
+        resDs.print("转换成row");
+
+        // 自定义输出的实体类型
+        DataStream<Row> rowDS = tableEnv.toChangelogStream(resTable);
+        rowDS.flatMap(new FlatMapFunction<Row, OrderStatistic>() {
+                    @Override
+                    public void flatMap(Row row, Collector<OrderStatistic> collector) throws Exception {
+                        RowKind kind = row.getKind();
+                        if (ObjectUtil.notEqual(kind, RowKind.DELETE) && ObjectUtil.notEqual(kind, RowKind.UPDATE_BEFORE)) {
+                            String userId = row.getFieldAs("userId");
+                            Long order_count = row.getFieldAs("order_count");
+                            Double max_money = row.getFieldAs("max_money");
+                            Double min_money = row.getFieldAs("min_money");
+                            collector.collect(new OrderStatistic(userId, order_count, max_money, min_money));
+                        }
+                    }
+                })
+                .printToErr("自定义转换");
 
         env.execute("D04_TableApi_Window");
+    }
+
+    /**
+     * 订单统计类
+     */
+    public static class OrderStatistic {
+        public String userId;
+        public Long order_count;
+        public Double max_money;
+        public Double min_money;
+
+        public OrderStatistic(String userId, Long order_count, Double max_money, Double min_money) {
+            this.userId = userId;
+            this.order_count = order_count;
+            this.max_money = max_money;
+            this.min_money = min_money;
+        }
+
+        public OrderStatistic() {
+        }
     }
 }
