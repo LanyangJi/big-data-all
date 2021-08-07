@@ -10,6 +10,8 @@ import static org.apache.flink.table.api.Expressions.$;
 /**
  * 从Kafka中消费数据并过滤出状态为success的数据再写入到Kafka
  *
+ * 类似于生产实际中的实时ETL
+ *
  * @author jilanyang
  * @package cn.jly.bigdata.flink_advanced.table
  * @class D05_TableApi_Sql_Kafka
