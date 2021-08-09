@@ -39,6 +39,7 @@ under the License.
         <maven.compiler.source>${target.java.version}</maven.compiler.source>
         <maven.compiler.target>${target.java.version}</maven.compiler.target>
         <log4j.version>2.12.1</log4j.version>
+        <hive.version>3.1.2</hive.version>
     </properties>
 
     <dependencies>
@@ -126,6 +127,19 @@ under the License.
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table-common</artifactId>
             <version>${flink.version}</version>
+        </dependency>
+
+        <!--        flink sql整合hive     -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-hive_${scala.binary.version}</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <version>${hive.version}</version>
         </dependency>
 
         <!-- flink sql连接Kafka -->
