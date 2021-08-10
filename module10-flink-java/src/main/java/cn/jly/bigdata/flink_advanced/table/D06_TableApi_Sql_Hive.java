@@ -1,9 +1,12 @@
 package cn.jly.bigdata.flink_advanced.table;
 
 import org.apache.flink.api.common.RuntimeExecutionMode;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.SqlDialect;
+import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.table.catalog.hive.HiveCatalog;
+import org.apache.flink.types.Row;
 
 /**
  * Apache Hive 已成为数据仓库生态系统的焦点。它不仅是一个用于大数据分析和 ETL 的 SQL 引擎，而且还是一个数据管理平台，
@@ -58,29 +61,43 @@ import org.apache.flink.table.catalog.hive.HiveCatalog;
  *
  * 通过表环境或 YAML 配置，使用Catalog interface和 HiveCatalog 连接到现有的 Hive 安装。
  * 请注意，虽然 HiveCatalog 不需要特定的规划器，但读/写 Hive 表仅适用于blink规划器。因此，强烈建议您在连接到 Hive 仓库时使用blink计划器。
+ *
+ * 注意：
+ * Flink目前支持两种SQL方言：default和hive。在使用hive语法编写之前，需要切换到hive方言。
+ *
  * @author jilanyang
  * @date 2021/8/9 22:51
  * @package cn.jly.bigdata.flink_advanced.table
  * @class D06_TableApi_Sql_Hive
  */
 public class D06_TableApi_Sql_Hive {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
 
         // 创建表环境
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
-        String name            = "myhive";
-        String defaultDatabase = "mydatabase";
-        String hiveConfDir     = "/opt/hive-conf";
+//        String name            = "myhive";
+//        String defaultDatabase = "mydatabase";
+//        String hiveConfDir     = "/opt/hive-conf";
 
-        HiveCatalog hiveCatalog = new HiveCatalog(name, defaultDatabase, hiveConfDir);
-        tableEnv.registerCatalog("hive", hiveCatalog);
+//        HiveCatalog hiveCatalog = new HiveCatalog(name, defaultDatabase, hiveConfDir);
+//        tableEnv.registerCatalog("hive", hiveCatalog);
 
         // set the HiveCatalog as the current catalog of the session
-        tableEnv.useCatalog("myhive");
+//        tableEnv.useCatalog("myhive");
 
         // todo hive DDL DML
+        // Flink目前支持两种SQL方言：default和hive。在使用hive语法编写之前，需要切换到hive方言
+        tableEnv.getConfig().setSqlDialect(SqlDialect.HIVE);
+        // 使用默认的sql方言
+        // tableEnv.getConfig().setSqlDialect(SqlDialect.DEFAULT);
+
+        Table table = tableEnv.sqlQuery("show databases;");
+        DataStream<Row> resDS = tableEnv.toDataStream(table);
+        resDS.print();
+
+        env.execute("D06_TableApi_Sql_Hive");
     }
 }
