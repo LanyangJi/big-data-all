@@ -82,7 +82,7 @@ public class D01_Checkpoint {
         //设置如果在做Checkpoint过程中出现错误，是否让整体任务失败：true是  false不是
         // env.getCheckpointConfig().setFailOnCheckpointingErrors(false);//默认是true，该api过期了，推荐使用下面的次数约定
         env.getCheckpointConfig().setTolerableCheckpointFailureNumber(10);//默认值为0，表示不容忍任何检查点失败
-        //设置是否清理检查点,表示 Cancel 时是否需要保留当前的 Checkpoint，默认 Checkpoint会在作业被Cancel时被删除
+        //设置是否清理检查点,即在 Cancel 时是否需要保留当前的 Checkpoint，默认 Checkpoint会在作业被Cancel时被删除
         //ExternalizedCheckpointCleanup.DELETE_ON_CANCELLATION：true,当作业被取消时，删除外部的checkpoint(默认值)
         //ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION：false,当作业被取消时，保留外部的checkpoint
         env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
@@ -92,7 +92,7 @@ public class D01_Checkpoint {
         env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
         //设置checkpoint的超时时间,如果 Checkpoint在 60s内尚未完成说明该次Checkpoint失败,则丢弃。
         env.getCheckpointConfig().setCheckpointTimeout(60000);//默认10分钟
-        //设置同一时间有多少个checkpoint可以同时执行; 这边如何设置为1的话是和配置项setMinPauseBetweenCheckpoints冲突的，二者取其一
+        //设置同一时间有多少个checkpoint可以同时执行; 这边如果设置大于1的话是和配置项setMinPauseBetweenCheckpoints冲突的，二者取其一
         // env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);//默认为1
 
         /*
@@ -101,7 +101,7 @@ public class D01_Checkpoint {
             2. 无重启策略
             3. 固定延迟重启策略——开发中使用
             4. 失败率重启策略——开发偶尔使用
-            设置失败重启策略：固定延迟策略：程序出现一场后，重启2次，每次延迟3秒重启；超过2次后，程序退出
+            设置失败重启策略：固定延迟策略：程序出现异常后，重启2次，每次延迟3秒重启；超过2次后，程序退出
          */
         env.setRestartStrategy(RestartStrategies.fixedDelayRestart(2, 3000));
 
