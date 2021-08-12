@@ -24,7 +24,7 @@ import org.apache.flink.util.OutputTag;
  * @class D01_Real_Big_Screen
  * @date 2021/8/4 21:06
  */
-public class D01_Real_Big_Screen {
+public class D01_Real_Big_Screen_Main_App {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
@@ -77,6 +77,6 @@ public class D01_Real_Big_Screen {
         resDs.getSideOutput(outputTag)
                 .print("total_price");
 
-        env.execute("D01_Real_Big_Screen");
+        env.execute("D01_Real_Big_Screen_Main_App");
     }
 }

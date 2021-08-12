@@ -31,6 +31,21 @@ under the License.
     <packaging>jar</packaging>
     <name>module10-flink-java</name>
 
+    <!--    <repositories>-->
+    <!--        <repository>-->
+    <!--            <id>maven-ali</id>-->
+    <!--            <url>http://maven.aliyun.com/nexus/content/groups/public//</url>-->
+    <!--            <releases>-->
+    <!--                <enabled>true</enabled>-->
+    <!--            </releases>-->
+    <!--            <snapshots>-->
+    <!--                <enabled>true</enabled>-->
+    <!--                <updatePolicy>always</updatePolicy>-->
+    <!--                <checksumPolicy>fail</checksumPolicy>-->
+    <!--            </snapshots>-->
+    <!--        </repository>-->
+    <!--    </repositories>-->
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <flink.version>1.13.0</flink.version>
@@ -39,6 +54,7 @@ under the License.
         <maven.compiler.source>${target.java.version}</maven.compiler.source>
         <maven.compiler.target>${target.java.version}</maven.compiler.target>
         <log4j.version>2.12.1</log4j.version>
+        <hive.version>3.1.2</hive.version>
     </properties>
 
     <dependencies>
@@ -127,6 +143,20 @@ under the License.
             <artifactId>flink-table-common</artifactId>
             <version>${flink.version}</version>
         </dependency>
+
+        <!--        flink sql整合hive     -->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.flink</groupId>-->
+<!--            <artifactId>flink-connector-hive_${scala.binary.version}</artifactId>-->
+<!--            <version>${flink.version}</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.apache.hive</groupId>-->
+<!--            <artifactId>hive-exec</artifactId>-->
+<!--            <version>${hive.version}</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- flink sql连接Kafka -->
         <dependency>
@@ -239,12 +269,28 @@ under the License.
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.17.1</version>
+            <version>3.17.3</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.20</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
     <build>
+        <!--        protobuf 0.5.1插件必须排序这个      -->
+<!--        <extensions>-->
+<!--            <extension>-->
+<!--                <groupId>kr.motd.maven</groupId>-->
+<!--                <artifactId>os-maven-plugin</artifactId>-->
+<!--                <version>1.5.0.Final</version>-->
+<!--            </extension>-->
+<!--        </extensions>-->
+
         <plugins>
 
             <!-- Java Compiler -->
@@ -306,6 +352,25 @@ under the License.
             </plugin>
 
             <!-- protobuf 编译组件 -->
+<!--            <plugin>-->
+<!--                <groupId>org.xolstice.maven.plugins</groupId>-->
+<!--                <artifactId>protobuf-maven-plugin</artifactId>-->
+<!--                <version>0.5.1</version>-->
+<!--                <extensions>true</extensions>-->
+<!--                <configuration>-->
+<!--                    <protoSourceRoot>${project.basedir}/src/main/protobuf</protoSourceRoot>-->
+<!--                    <protocArtifact>com.google.protobuf:protoc:3.9.1:exe:${os.detected.classifier}</protocArtifact>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>compile</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+
+            <!-- protobuf 编译组件 -->
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
@@ -314,7 +379,7 @@ under the License.
                     <protocExecutable>
                         <!-- 刚刚环境变量配置的位置 D:\software\devsoft\protoc-3.17.1-win64\bin\protoc.exe;
                          C:\software\dev\protoc-3.17.3-win64\bin\protoc.exe -->
-                        C:\software\dev\protoc-3.17.3-win64\bin\protoc.exe
+                        D:\software\protoc-3.17.3-win64\bin\protoc.exe
                     </protocExecutable>
                     <pluginId>protoc-java</pluginId>
                     <!-- proto文件放置的目录 -->

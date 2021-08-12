@@ -31,7 +31,7 @@ import static org.apache.flink.table.api.Expressions.lit;
  * 那么接下来使用FlinkTable&SQL-API来实现
  * <p>
  * 使用事件时间+Watermark+Flink SQL和Table中的window
- *
+ * <p>
  * 这里使用table api的方式
  *
  * @author jilanyang
@@ -73,12 +73,12 @@ public class D04_TableApi_Window {
 
         // 创建表
         Table resTable = tableEnv.fromDataStream(
-                        orderWithWatermarkDs,
-                        $("orderId"),
-                        $("userId"),
-                        $("createTime").rowtime().as("rowtime"),
-                        $("money")
-                )
+                orderWithWatermarkDs,
+                $("orderId"),
+                $("userId"),
+                $("createTime").rowtime().as("rowtime"),
+                $("money")
+        )
                 .window(
                         Tumble.over(lit(5).seconds())
                                 .on($("rowtime"))
@@ -93,24 +93,34 @@ public class D04_TableApi_Window {
                 );
 
         // 转换输出
+        /*
+            RowKind:
+                @PublicEvolving
+                public enum RowKind {
+                    INSERT("+I", (byte)0), // 插入
+                    UPDATE_BEFORE("-U", (byte)1), // 更新前
+                    UPDATE_AFTER("+U", (byte)2), // 更新后
+                    DELETE("-D", (byte)3); // 删除
+               }
+         */
         DataStream<Tuple2<Boolean, Row>> resDs = tableEnv.toRetractStream(resTable, Row.class);
         resDs.print("转换成row");
 
         // 自定义输出的实体类型
         DataStream<Row> rowDS = tableEnv.toChangelogStream(resTable);
         rowDS.flatMap(new FlatMapFunction<Row, OrderStatistic>() {
-                    @Override
-                    public void flatMap(Row row, Collector<OrderStatistic> collector) throws Exception {
-                        RowKind kind = row.getKind();
-                        if (ObjectUtil.notEqual(kind, RowKind.DELETE) && ObjectUtil.notEqual(kind, RowKind.UPDATE_BEFORE)) {
-                            String userId = row.getFieldAs("userId");
-                            Long order_count = row.getFieldAs("order_count");
-                            Double max_money = row.getFieldAs("max_money");
-                            Double min_money = row.getFieldAs("min_money");
-                            collector.collect(new OrderStatistic(userId, order_count, max_money, min_money));
-                        }
-                    }
-                })
+            @Override
+            public void flatMap(Row row, Collector<OrderStatistic> collector) throws Exception {
+                RowKind kind = row.getKind();
+                if (ObjectUtil.notEqual(kind, RowKind.DELETE) && ObjectUtil.notEqual(kind, RowKind.UPDATE_BEFORE)) {
+                    String userId = row.getFieldAs("userId");
+                    Long order_count = row.getFieldAs("order_count");
+                    Double max_money = row.getFieldAs("max_money");
+                    Double min_money = row.getFieldAs("min_money");
+                    collector.collect(new OrderStatistic(userId, order_count, max_money, min_money));
+                }
+            }
+        })
                 .printToErr("自定义转换");
 
         env.execute("D04_TableApi_Window");
