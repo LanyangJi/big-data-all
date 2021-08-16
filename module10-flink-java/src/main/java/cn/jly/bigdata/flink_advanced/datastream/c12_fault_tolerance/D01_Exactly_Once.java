@@ -138,29 +138,35 @@ public class D01_Exactly_Once {
         DataStreamSource<String> kafkaDS = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "kafka_source");
 
         // transformation
-        SingleOutputStreamOperator<String> resDS = kafkaDS.flatMap(new FlatMapFunction<String, WordAndCount>() {
-            @Override
-            public void flatMap(String value, Collector<WordAndCount> out) throws Exception {
-                String[] words = value.split(",");
-                for (String word : words) {
-                    out.collect(new WordAndCount(word, 1L));
-                }
-            }
-        })
+        SingleOutputStreamOperator<String> resDS = kafkaDS.flatMap(
+                        new FlatMapFunction<String, WordAndCount>() {
+                            @Override
+                            public void flatMap(String value, Collector<WordAndCount> out) throws Exception {
+                                String[] words = value.split(",");
+                                for (String word : words) {
+                                    out.collect(new WordAndCount(word, 1L));
+                                }
+                            }
+                        }
+                )
                 .keyBy(WordAndCount::getWord)
-                .reduce(new ReduceFunction<WordAndCount>() {
-                    @Override
-                    public WordAndCount reduce(WordAndCount wc1, WordAndCount wc2) throws Exception {
-                        wc1.setCount(wc1.getCount() + wc2.getCount());
-                        return wc1;
-                    }
-                })
-                .map(new MapFunction<WordAndCount, String>() {
-                    @Override
-                    public String map(WordAndCount value) throws Exception {
-                        return JSON.toJSONString(value);
-                    }
-                });
+                .reduce(
+                        new ReduceFunction<WordAndCount>() {
+                            @Override
+                            public WordAndCount reduce(WordAndCount wc1, WordAndCount wc2) throws Exception {
+                                wc1.setCount(wc1.getCount() + wc2.getCount());
+                                return wc1;
+                            }
+                        }
+                )
+                .map(
+                        new MapFunction<WordAndCount, String>() {
+                            @Override
+                            public String map(WordAndCount value) throws Exception {
+                                return JSON.toJSONString(value);
+                            }
+                        }
+                );
 
 
         // flink kafka sink - 后期项目中使用自定义的序列化规则
@@ -170,7 +176,8 @@ public class D01_Exactly_Once {
                 "my-topic",                  // target topic
                 new KeyedSerializationSchemaWrapper<>(new SimpleStringSchema()),    // serialization schema
                 properties,                  // producer config
-                FlinkKafkaProducer.Semantic.EXACTLY_ONCE); // fault-tolerance
+                FlinkKafkaProducer.Semantic.EXACTLY_ONCE
+        ); // fault-tolerance
         resDS.addSink(kafkaProducer);
 
         env.execute("D01_Exactly_Once");
