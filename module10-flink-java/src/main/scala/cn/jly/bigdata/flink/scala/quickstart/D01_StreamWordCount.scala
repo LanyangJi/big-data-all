@@ -1,4 +1,4 @@
-package cn.jly.flink.scala.quickstart
+package cn.jly.bigdata.flink.scala.quickstart
 
 import org.apache.flink.api.common.RuntimeExecutionMode
 import org.apache.flink.streaming.api.scala._
