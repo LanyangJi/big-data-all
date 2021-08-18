@@ -10,7 +10,6 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import java.time.Duration;
@@ -18,10 +17,27 @@ import java.time.Duration;
 import static org.apache.flink.table.api.Expressions.$;
 
 /**
+ * 会话窗口没有固定大小，但它们的边界由不活动的间隔定义，即，如果在定义的间隙期间没有事件出现，会话窗口将关闭。
+ * 例如，当在 30 分钟不活动后观察到一行时，会有 30 分钟间隔的会话窗口开始（否则该行将被添加到现有窗口中），
+ * 如果在 30 分钟内没有添加行，则关闭。会话窗口可以在事件时间或处理时间工作。
+ * <p>
+ * A session window is defined by using the Session class as follows:
+ * <p>
+ * Method	Description
+ * withGap	Defines the gap between two windows as time interval.
+ * on	    The time attribute to group (time interval) or sort (row count) on. For batch queries this might be any Long or Timestamp attribute. For streaming queries this must be a declared event-time or processing-time time attribute.
+ * as	    Assigns an alias to the window. The alias is used to reference the window in the following groupBy() clause and optionally to select window properties such as window start, end, or rowtime timestamps in the select() clause.
+ * <p>
+ * // Session Event-time Window
+ * .window(Session.withGap(lit(10).minutes()).on($("rowtime")).as("w"));
+ * <p>
+ * // Session Processing-time Window (assuming a processing-time attribute "proctime")
+ * .window(Session.withGap(lit(10).minutes()).on($("proctime")).as("w"));
+ *
  * @author jilanyang
- * @createTime 2021/8/16 17:17
+ * @createTime 2021/8/18 17:28
  */
-public class D21_TableApi_OrderBy_Offset_Fetch {
+public class D25_TableApi_Session_Window {
     @SneakyThrows
     public static void main(String[] args) {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -59,36 +75,14 @@ public class D21_TableApi_OrderBy_Offset_Fetch {
                 );
 
         // dataStream -> table
-        Table orderTable = tableEnv.fromDataStream(orderDS, $("orderId"), $("userId"), $("createTime").rowtime(), $("money"));
+        Table orderTable = tableEnv.fromDataStream(
+                orderDS,
+                $("orderId"),
+                $("userId"),
+                $("createTime").rowtime(),
+                $("money")
+        );
 
-        /*
-            oderBy
-                类似于 SQL ORDER BY 子句。返回跨所有并行分区全局排序的记录。对于无界表，此操作需要对时间属性进行排序以及追加后续fetch操作。
-
-                注意：orderBy必须是针对时间属性列，否则会报出： Sort on a non-time-attribute field is not supported.
-         */
-        Table orderByTable = orderTable.orderBy($("createTime").desc()).fetch(3);
-
-        // 输出
-        tableEnv.toRetractStream(orderByTable, Row.class).print();
-
-        /*
-
-            类似于 SQL OFFSET 和 FETCH 子句。偏移操作限制来自偏移位置的（可能已排序）结果。提取操作将（可能已排序的）结果限制为前 n 行。
-            通常，这两个操作前面都有一个排序运算符。对于无界表，偏移操作需要获取操作。
-
-            // returns the first 5 records from the sorted result
-            Table result1 = in.orderBy($("a").asc()).fetch(5);
-
-            // skips the first 3 records and returns all following records from the sorted result
-            Table result2 = in.orderBy($("a").asc()).offset(3);
-
-            // skips the first 10 records and returns the next 5 records from the sorted result
-            Table result3 = in.orderBy($("a").asc()).offset(10).fetch(5);
-
-         */
-
-
-        env.execute("D21_TableApi_OrderBy_Offset_Fetch");
+        env.execute("D25_TableApi_Session_Window");
     }
 }

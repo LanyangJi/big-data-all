@@ -10,7 +10,6 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import java.time.Duration;
@@ -18,15 +17,21 @@ import java.time.Duration;
 import static org.apache.flink.table.api.Expressions.$;
 
 /**
+ * !!!!!!!!!! sql 中不允许有分号 ！！！！！！！！！！！！！！！！！！
+ * <p>
+ * 类似于 SQL 查询中的 INSERT INTO 子句，该方法执行插入到已注册输出表中的操作。 executeInsert() 方法将立即提交执行插入操作的 Flink 作业。
+ * 输出表必须在 TableEnvironment 中注册（参见连接器表）。此外，输入表与输出表的schema必须相匹配。
+ *
  * @author jilanyang
- * @createTime 2021/8/16 17:17
+ * @createTime 2021/8/18 10:31
  */
-public class D21_TableApi_OrderBy_Offset_Fetch {
+public class D22_TableApi_Insert {
     @SneakyThrows
     public static void main(String[] args) {
+
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
-        env.setParallelism(1);
+        env.setParallelism(1); // 为了方便查看
         StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
         // source - 订单流
@@ -58,37 +63,45 @@ public class D21_TableApi_OrderBy_Offset_Fetch {
                                 )
                 );
 
-        // dataStream -> table
+        // 输入表
         Table orderTable = tableEnv.fromDataStream(orderDS, $("orderId"), $("userId"), $("createTime").rowtime(), $("money"));
+        tableEnv.createTemporaryView("tbl_order", orderTable);
 
-        /*
-            oderBy
-                类似于 SQL ORDER BY 子句。返回跨所有并行分区全局排序的记录。对于无界表，此操作需要对时间属性进行排序以及追加后续fetch操作。
+        // 输出表
+        tableEnv.executeSql(
+                "create table if not exists fs_order_table ( " +
+                        "    orderId string, " +
+                        "    userId string, " +
+                        "    createTime timestamp(3), " +
+                        "    money double, " +
+                        "    dt string, " +         // 一级分区字段：日期
+                        "    `hour` string " +      // 二级分区字段：小时
+                        ") partitioned by (dt, `hour`) with ( " +
+                        "    'connector' = 'filesystem', " +
+                        "    'path' = 'file:///D:/test/', " +
+                        "    'format' = 'json', " +
+                        "    'sink.partition-commit.delay'='1 h', " +
+                        "    'sink.partition-commit.policy.kind'='success-file' " +
+                        ")"
+        );
 
-                注意：orderBy必须是针对时间属性列，否则会报出： Sort on a non-time-attribute field is not supported.
-         */
-        Table orderByTable = orderTable.orderBy($("createTime").desc()).fetch(3);
+        // 方式一：以sql的方式插入
+        tableEnv.executeSql(
+                "insert into fs_order_table  " +
+                        "select  " +
+                        "      orderId,  " +
+                        "      userId,  " +
+                        "      createTime,  " +
+                        "      money,  " +
+                        "      date_format(createTime, 'yyyy-MM-dd'),  " +
+                        "      date_format(createTime, 'HH')  " +
+                        "from tbl_order"
+        );
 
-        // 输出
-        tableEnv.toRetractStream(orderByTable, Row.class).print();
+        // 方式二: tableApi的方式
+        // 但是本示例不合适，因为两个表的列并不匹配，输出表中本示例添加了2个分区字段，需要从输入表的时间字段中转换计算而来
+        // orderTable.executeInsert("fs_order_table")
 
-        /*
-
-            类似于 SQL OFFSET 和 FETCH 子句。偏移操作限制来自偏移位置的（可能已排序）结果。提取操作将（可能已排序的）结果限制为前 n 行。
-            通常，这两个操作前面都有一个排序运算符。对于无界表，偏移操作需要获取操作。
-
-            // returns the first 5 records from the sorted result
-            Table result1 = in.orderBy($("a").asc()).fetch(5);
-
-            // skips the first 3 records and returns all following records from the sorted result
-            Table result2 = in.orderBy($("a").asc()).offset(3);
-
-            // skips the first 10 records and returns the next 5 records from the sorted result
-            Table result3 = in.orderBy($("a").asc()).offset(10).fetch(5);
-
-         */
-
-
-        env.execute("D21_TableApi_OrderBy_Offset_Fetch");
+        env.execute("D22_TableApi_Insert");
     }
 }
