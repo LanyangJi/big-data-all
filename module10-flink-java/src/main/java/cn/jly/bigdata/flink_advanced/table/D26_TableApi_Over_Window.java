@@ -1,48 +1,38 @@
 package cn.jly.bigdata.flink_advanced.table;
 
 import cn.jly.bigdata.flink_advanced.datastream.beans.Order;
-import lombok.SneakyThrows;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.table.api.Session;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
-import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 
 import java.time.Duration;
 
 import static org.apache.flink.table.api.Expressions.$;
-import static org.apache.flink.table.api.Expressions.lit;
 
 /**
- * 会话窗口没有固定大小，但它们的边界由不活动的间隔定义，即，如果在定义的间隙期间没有事件出现，会话窗口将关闭。
- * 例如，当在 30 分钟不活动后观察到一行时，会有 30 分钟间隔的会话窗口开始（否则该行将被添加到现有窗口中），
- * 如果在 30 分钟内没有添加行，则关闭。会话窗口可以在事件时间或处理时间工作。
- * <p>
- * A session window is defined by using the Session class as follows:
- * <p>
- * Method	Description
- * withGap	Defines the gap between two windows as time interval.
- * on	    The time attribute to group (time interval) or sort (row count) on. For batch queries this might be any Long or Timestamp attribute. For streaming queries this must be a declared event-time or processing-time time attribute.
- * as	    Assigns an alias to the window. The alias is used to reference the window in the following groupBy() clause and optionally to select window properties such as window start, end, or rowtime timestamps in the select() clause.
- * <p>
- * // Session Event-time Window
- * .window(Session.withGap(lit(10).minutes()).on($("rowtime")).as("w"));
- * <p>
- * // Session Processing-time Window (assuming a processing-time attribute "proctime")
- * .window(Session.withGap(lit(10).minutes()).on($("proctime")).as("w"));
+ * Over window 聚合是从标准 SQL（OVER 子句）中得知的，并在查询的 SELECT 子句中定义。
+ * 与在 GROUP BY 子句中指定的组窗口不同，窗口上方不会折叠行。相反，在窗口聚合上为每个输入行在其相邻行的范围内计算聚合。
+ *
+ * OverWindow 定义了计算聚合的行范围。 OverWindow 不是用户可以实现的接口。相反，Table API 提供了 Over 类来配置覆盖窗口的属性。
+ * 可以在事件时间或处理时间以及指定为时间间隔或行计数的范围内定义窗口。支持的窗口定义作为 Over（和其他类）上的方法公开，并在下面列出：
+ *
+ * partition by(可选):
+ * 在一个或多个属性上定义输入的分区。每个分区都单独排序，聚合函数分别应用于每个分区。
+ * 注意：在流环境中，如果窗口包含 partition by 子句，则只能并行计算窗口聚合。如果没有 partitionBy(…)，流由单个非并行任务处理。
+ *
+ *
  *
  * @author jilanyang
- * @createTime 2021/8/18 17:28
+ * @createTime 2021/8/19 11:26
  */
-public class D25_TableApi_Session_Window {
-    @SneakyThrows
-    public static void main(String[] args) {
+public class D26_TableApi_Over_Window {
+    public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
         env.setParallelism(1);
@@ -86,23 +76,9 @@ public class D25_TableApi_Session_Window {
                 $("money")
         );
 
-        // session window
-        Table sessionAggTable = orderTable.window(
-                Session.withGap(lit(5).second())
-                        .on($("createTime"))
-                        .as("w")
-        )
-                .groupBy($("w"), $("userId"))
-                .select(
-                        $("userId"),
-                        $("w").start().as("w_start"),
-                        $("w").end().as("w_end"),
-                        $("money").sum().as("sum_money")
-                );
+        // over window
 
-        // 输出
-        tableEnv.toRetractStream(sessionAggTable, Row.class).print();
 
-        env.execute("D25_TableApi_Session_Window");
+        env.execute("D26_TableApi_Over_Window");
     }
 }
