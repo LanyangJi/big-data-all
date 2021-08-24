@@ -9,8 +9,6 @@ package cn.jly.bigdata.flink.scala.exer
  * @author jilanyang
  * @date 2021年8月17日23:21:09
  */
-object D01_MainApp {
-  def main(args: Array[String]): Unit = {
+object D01_Scala_MainApp {
 
-  }
 }

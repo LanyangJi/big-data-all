@@ -3,7 +3,7 @@ package cn.jly.bigdata.flink.scala.quickstart
 import org.apache.flink.api.common.RuntimeExecutionMode
 import org.apache.flink.streaming.api.scala._
 
-object D01_StreamWordCount {
+object D01_Scala_StreamWordCount {
   def main(args: Array[String]): Unit = {
 
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
@@ -19,6 +19,6 @@ object D01_StreamWordCount {
       )
       .print();
 
-    env.execute("D01_StreamWordCount");
+    env.execute("D01_Scala_StreamWordCount");
   }
 }
