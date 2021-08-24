@@ -1,0 +1,1 @@
+bin/flink run -c cn.jly.bigdata.flink_advanced.monitor.D01_Flink_Metrics -p 2 ./module10-flink-java-1.0.0.jar

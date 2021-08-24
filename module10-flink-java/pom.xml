@@ -374,7 +374,8 @@ under the License.
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>
-                                        cn.jly.bigdata.flink.datastream.c01_quickstart.D05_DataStreamApi_lambda_yarn
+<!--                                        cn.jly.bigdata.flink.datastream.c01_quickstart.D05_DataStreamApi_lambda_yarn-->
+                                        cn.jly.bigdata.flink_advanced.monitor.D01_Flink_Metrics
                                     </mainClass>
                                 </transformer>
                             </transformers>
@@ -403,32 +404,32 @@ under the License.
             <!--            </plugin>-->
 
             <!-- protobuf 编译组件 -->
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
-                <configuration>
-                    <protocExecutable>
-                        <!-- 刚刚环境变量配置的位置 D:\software\devsoft\protoc-3.17.1-win64\bin\protoc.exe;
-                         C:\software\dev\protoc-3.17.3-win64\bin\protoc.exe -->
-                        D:\software\protoc-3.17.3-win64\bin\protoc.exe
-                    </protocExecutable>
-                    <pluginId>protoc-java</pluginId>
-                    <!-- proto文件放置的目录 -->
-                    <protoSourceRoot>${project.basedir}/src/main/protobuf</protoSourceRoot>
-                    <!-- 生成文件的目录 -->
-                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-                    <!-- 生成文件前是否把目标目录清空，这个最好设置为false，以免误删项目文件 -->
-                    <clearOutputDirectory>false</clearOutputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.xolstice.maven.plugins</groupId>-->
+<!--                <artifactId>protobuf-maven-plugin</artifactId>-->
+<!--                <version>0.6.1</version>-->
+<!--                <configuration>-->
+<!--                    <protocExecutable>-->
+<!--                        &lt;!&ndash; 刚刚环境变量配置的位置 D:\software\devsoft\protoc-3.17.1-win64\bin\protoc.exe;-->
+<!--                         C:\software\dev\protoc-3.17.3-win64\bin\protoc.exe &ndash;&gt;-->
+<!--                        D:\software\protoc-3.17.3-win64\bin\protoc.exe-->
+<!--                    </protocExecutable>-->
+<!--                    <pluginId>protoc-java</pluginId>-->
+<!--                    &lt;!&ndash; proto文件放置的目录 &ndash;&gt;-->
+<!--                    <protoSourceRoot>${project.basedir}/src/main/protobuf</protoSourceRoot>-->
+<!--                    &lt;!&ndash; 生成文件的目录 &ndash;&gt;-->
+<!--                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>-->
+<!--                    &lt;!&ndash; 生成文件前是否把目标目录清空，这个最好设置为false，以免误删项目文件 &ndash;&gt;-->
+<!--                    <clearOutputDirectory>false</clearOutputDirectory>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>compile</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
 
         <pluginManagement>
