@@ -1,23 +1,17 @@
 package cn.jly.bigdata.flink_advanced.table;
 
 import cn.jly.bigdata.flink_advanced.datastream.beans.Order;
-import jdk.internal.org.objectweb.asm.TypeReference;
 import lombok.SneakyThrows;
 import org.apache.flink.api.common.RuntimeExecutionMode;
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.catalog.DataTypeFactory;
 import org.apache.flink.table.functions.ScalarFunction;
-import org.apache.flink.table.types.DataType;
-import org.apache.flink.table.types.inference.InputTypeStrategies;
 import org.apache.flink.table.types.inference.TypeInference;
 import org.apache.flink.table.types.inference.TypeStrategies;
-import org.apache.flink.table.types.inference.TypeStrategy;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Collector;
 

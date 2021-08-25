@@ -3,9 +3,6 @@
 
 package cn.jly.bigdata.flink_advanced.datastream.beans;
 
-import com.google.protobuf.Descriptors.OneofDescriptor;
-import com.google.protobuf.CodedInputStream;
-
 public final class Model {
   private Model() {}
   public static void registerAllExtensions(
@@ -68,7 +65,7 @@ public final class Model {
       return this.unknownFields;
     }
     private WordCount(
-        CodedInputStream input,
+        com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
@@ -434,7 +431,7 @@ public final class Model {
       }
       @java.lang.Override
       public Builder clearOneof(
-          OneofDescriptor oneof) {
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
       @java.lang.Override
