@@ -231,8 +231,8 @@ public class D01_HotItems {
         public void processElement(ItemViewCount itemViewCount, KeyedProcessFunction<Long, ItemViewCount, String>.Context ctx, Collector<String> out) throws Exception {
             this.itemViewCountListState.add(itemViewCount);
 
-            // 定义一个1ms之后的定时器，用以对状态中的数据进行排序并输出topN
-            ctx.timerService().registerEventTimeTimer(itemViewCount.getWindowEnd() + 1L);
+            // 定义一个100ms之后的定时器，用以对状态中的数据进行排序并输出topN
+            ctx.timerService().registerEventTimeTimer(itemViewCount.getWindowEnd() + 100L);
         }
 
         @Override

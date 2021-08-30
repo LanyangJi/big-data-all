@@ -43,13 +43,14 @@ public class KafkaUtils {
         while (true) {
             UserBehavior behavior = new UserBehavior();
             behavior.setUserId(RandomUtil.randomLong(100001, 100100));
-            behavior.setItemId(RandomUtil.randomLong(100, 120));
+            behavior.setItemId(RandomUtil.randomLong(100, 105));
             behavior.setCategoryId(RandomUtil.randomInt(behavior.getItemId().intValue()));
             behavior.setBehavior(userBehaviorActions.get(RandomUtil.randomInt(0, userBehaviorActions.size())));
             behavior.setTimestamp(System.currentTimeMillis());
 
             writeToKafka("test", JSON.toJSONString(behavior));
 
+            // 线程睡100毫秒
             Thread.sleep(1000L);
         }
     }
