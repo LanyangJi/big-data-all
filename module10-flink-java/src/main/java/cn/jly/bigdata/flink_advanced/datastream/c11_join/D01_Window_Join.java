@@ -48,53 +48,53 @@ public class D01_Window_Join {
         // 商品信息流
         DataStream<Goods> goodsDS = env.addSource(new GoodsSourceFunction())
                 .assignTimestampsAndWatermarks(
-                       WatermarkStrategy.forGenerator(new WatermarkGeneratorSupplier<Goods>() {
-                           @Override
-                           public WatermarkGenerator<Goods> createWatermarkGenerator(Context context) {
-                               return new WatermarkGenerator<Goods>() {
-                                   @Override
-                                   public void onEvent(Goods event, long eventTimestamp, WatermarkOutput output) {
-                                       output.emitWatermark(new Watermark(System.currentTimeMillis()));
-                                   }
-
-                                   @Override
-                                   public void onPeriodicEmit(WatermarkOutput output) {
-                                       output.emitWatermark(new Watermark(System.currentTimeMillis()));
-                                   }
-                               };
-                           }
-                       })
-                        .withTimestampAssigner(new TimestampAssignerSupplier<Goods>() {
-                            @Override
-                            public TimestampAssigner<Goods> createTimestampAssigner(Context context) {
-                                return new TimestampAssigner<Goods>() {
+                        WatermarkStrategy.forGenerator(new WatermarkGeneratorSupplier<Goods>() {
                                     @Override
-                                    public long extractTimestamp(Goods element, long recordTimestamp) {
-                                        return System.currentTimeMillis();
+                                    public WatermarkGenerator<Goods> createWatermarkGenerator(Context context) {
+                                        return new WatermarkGenerator<Goods>() {
+                                            @Override
+                                            public void onEvent(Goods event, long eventTimestamp, WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
+
+                                            @Override
+                                            public void onPeriodicEmit(WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
+                                        };
                                     }
-                                };
-                            }
-                        })
+                                })
+                                .withTimestampAssigner(new TimestampAssignerSupplier<Goods>() {
+                                    @Override
+                                    public TimestampAssigner<Goods> createTimestampAssigner(Context context) {
+                                        return new TimestampAssigner<Goods>() {
+                                            @Override
+                                            public long extractTimestamp(Goods element, long recordTimestamp) {
+                                                return System.currentTimeMillis();
+                                            }
+                                        };
+                                    }
+                                })
                 );
         // 订单流
         DataStream<OrderItem> orderItemDS = env.addSource(new OrderItemSourceFunction())
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.forGenerator(new WatermarkGeneratorSupplier<OrderItem>() {
-                            @Override
-                            public WatermarkGenerator<OrderItem> createWatermarkGenerator(Context context) {
-                                return new WatermarkGenerator<OrderItem>() {
                                     @Override
-                                    public void onEvent(OrderItem event, long eventTimestamp, WatermarkOutput output) {
-                                        output.emitWatermark(new Watermark(System.currentTimeMillis()));
-                                    }
+                                    public WatermarkGenerator<OrderItem> createWatermarkGenerator(Context context) {
+                                        return new WatermarkGenerator<OrderItem>() {
+                                            @Override
+                                            public void onEvent(OrderItem event, long eventTimestamp, WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
 
-                                    @Override
-                                    public void onPeriodicEmit(WatermarkOutput output) {
-                                        output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            @Override
+                                            public void onPeriodicEmit(WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
+                                        };
                                     }
-                                };
-                            }
-                        })
+                                })
                                 .withTimestampAssigner(new TimestampAssignerSupplier<OrderItem>() {
                                     @Override
                                     public TimestampAssigner<OrderItem> createTimestampAssigner(Context context) {
@@ -111,31 +111,37 @@ public class D01_Window_Join {
         // join
         DataStream<FactOrderItem> resDS = goodsDS.join(orderItemDS)
                 // where和equalTo联合指定join条件
-                .where(new KeySelector<Goods, String>() {
-                    @Override
-                    public String getKey(Goods goods) throws Exception {
-                        return goods.getGoodsId();
-                    }
-                })
-                .equalTo(new KeySelector<OrderItem, String>() {
-                    @Override
-                    public String getKey(OrderItem orderItem) throws Exception {
-                        return orderItem.getGoodsId();
-                    }
-                })
+                .where(
+                        new KeySelector<Goods, String>() {
+                            @Override
+                            public String getKey(Goods goods) throws Exception {
+                                return goods.getGoodsId();
+                            }
+                        }
+                )
+                .equalTo(
+                        new KeySelector<OrderItem, String>() {
+                            @Override
+                            public String getKey(OrderItem orderItem) throws Exception {
+                                return orderItem.getGoodsId();
+                            }
+                        }
+                )
                 // 开窗处理,这边以滚动窗口为例
                 .window(TumblingEventTimeWindows.of(Time.seconds(5)))
-                .apply(new JoinFunction<Goods, OrderItem, FactOrderItem>() {
-                    @Override
-                    public FactOrderItem join(Goods goods, OrderItem orderItem) throws Exception {
-                        return new FactOrderItem(
-                                goods.getGoodsId(),
-                                goods.getGoodsName(),
-                                BigDecimal.valueOf(orderItem.getCount()),
-                                goods.getGoodsPrice().multiply(BigDecimal.valueOf(orderItem.getCount()))
-                        );
-                    }
-                });
+                .apply(
+                        new JoinFunction<Goods, OrderItem, FactOrderItem>() {
+                            @Override
+                            public FactOrderItem join(Goods goods, OrderItem orderItem) throws Exception {
+                                return new FactOrderItem(
+                                        goods.getGoodsId(),
+                                        goods.getGoodsName(),
+                                        BigDecimal.valueOf(orderItem.getCount()),
+                                        goods.getGoodsPrice().multiply(BigDecimal.valueOf(orderItem.getCount()))
+                                );
+                            }
+                        }
+                );
 
         resDS.print();
 

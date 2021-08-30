@@ -39,21 +39,21 @@ public class D02_Interval_Join {
         DataStream<D01_Window_Join.Goods> goodsDS = env.addSource(new D01_Window_Join.GoodsSourceFunction())
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.forGenerator(new WatermarkGeneratorSupplier<D01_Window_Join.Goods>() {
-                            @Override
-                            public WatermarkGenerator<D01_Window_Join.Goods> createWatermarkGenerator(Context context) {
-                                return new WatermarkGenerator<D01_Window_Join.Goods>() {
                                     @Override
-                                    public void onEvent(D01_Window_Join.Goods event, long eventTimestamp, WatermarkOutput output) {
-                                        output.emitWatermark(new Watermark(System.currentTimeMillis()));
-                                    }
+                                    public WatermarkGenerator<D01_Window_Join.Goods> createWatermarkGenerator(Context context) {
+                                        return new WatermarkGenerator<D01_Window_Join.Goods>() {
+                                            @Override
+                                            public void onEvent(D01_Window_Join.Goods event, long eventTimestamp, WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
 
-                                    @Override
-                                    public void onPeriodicEmit(WatermarkOutput output) {
-                                        output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            @Override
+                                            public void onPeriodicEmit(WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
+                                        };
                                     }
-                                };
-                            }
-                        })
+                                })
                                 .withTimestampAssigner(new TimestampAssignerSupplier<D01_Window_Join.Goods>() {
                                     @Override
                                     public TimestampAssigner<D01_Window_Join.Goods> createTimestampAssigner(Context context) {
@@ -70,21 +70,21 @@ public class D02_Interval_Join {
         DataStream<D01_Window_Join.OrderItem> orderItemDS = env.addSource(new D01_Window_Join.OrderItemSourceFunction())
                 .assignTimestampsAndWatermarks(
                         WatermarkStrategy.forGenerator(new WatermarkGeneratorSupplier<D01_Window_Join.OrderItem>() {
-                            @Override
-                            public WatermarkGenerator<D01_Window_Join.OrderItem> createWatermarkGenerator(Context context) {
-                                return new WatermarkGenerator<D01_Window_Join.OrderItem>() {
                                     @Override
-                                    public void onEvent(D01_Window_Join.OrderItem event, long eventTimestamp, WatermarkOutput output) {
-                                        output.emitWatermark(new Watermark(System.currentTimeMillis()));
-                                    }
+                                    public WatermarkGenerator<D01_Window_Join.OrderItem> createWatermarkGenerator(Context context) {
+                                        return new WatermarkGenerator<D01_Window_Join.OrderItem>() {
+                                            @Override
+                                            public void onEvent(D01_Window_Join.OrderItem event, long eventTimestamp, WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
 
-                                    @Override
-                                    public void onPeriodicEmit(WatermarkOutput output) {
-                                        output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            @Override
+                                            public void onPeriodicEmit(WatermarkOutput output) {
+                                                output.emitWatermark(new Watermark(System.currentTimeMillis()));
+                                            }
+                                        };
                                     }
-                                };
-                            }
-                        })
+                                })
                                 .withTimestampAssigner(new TimestampAssignerSupplier<D01_Window_Join.OrderItem>() {
                                     @Override
                                     public TimestampAssigner<D01_Window_Join.OrderItem> createTimestampAssigner(Context context) {
@@ -100,24 +100,26 @@ public class D02_Interval_Join {
 
         // interval join
         SingleOutputStreamOperator<D01_Window_Join.FactOrderItem> resDS =
-                goodsDS.keyBy(g -> g.getGoodsId())
+                goodsDS.keyBy(D01_Window_Join.Goods::getGoodsId)
                         // join的条件：
                         // 1. goodsId要相等
                         // 2. orderItemDS的时间戳 - 2 <= goodsDS的时间戳 <= orderItemDS的时间戳 + 1
-                        .intervalJoin(orderItemDS.keyBy(o -> o.getGoodsId()))
+                        .intervalJoin(orderItemDS.keyBy(D01_Window_Join.OrderItem::getGoodsId))
                         .between(Time.seconds(-2), Time.seconds(1))
-                        .process(new ProcessJoinFunction<D01_Window_Join.Goods, D01_Window_Join.OrderItem, D01_Window_Join.FactOrderItem>() {
-                            @Override
-                            public void processElement(D01_Window_Join.Goods goods, D01_Window_Join.OrderItem orderItem, Context ctx, Collector<D01_Window_Join.FactOrderItem> out) throws Exception {
-                                D01_Window_Join.FactOrderItem factOrderItem = new D01_Window_Join.FactOrderItem(
-                                        goods.getGoodsId(),
-                                        goods.getGoodsName(),
-                                        BigDecimal.valueOf(orderItem.getCount()),
-                                        goods.getGoodsPrice().multiply(BigDecimal.valueOf(orderItem.getCount()))
-                                );
-                                out.collect(factOrderItem);
-                            }
-                        });
+                        .process(
+                                new ProcessJoinFunction<D01_Window_Join.Goods, D01_Window_Join.OrderItem, D01_Window_Join.FactOrderItem>() {
+                                    @Override
+                                    public void processElement(D01_Window_Join.Goods goods, D01_Window_Join.OrderItem orderItem, Context ctx, Collector<D01_Window_Join.FactOrderItem> out) throws Exception {
+                                        D01_Window_Join.FactOrderItem factOrderItem = new D01_Window_Join.FactOrderItem(
+                                                goods.getGoodsId(),
+                                                goods.getGoodsName(),
+                                                BigDecimal.valueOf(orderItem.getCount()),
+                                                goods.getGoodsPrice().multiply(BigDecimal.valueOf(orderItem.getCount()))
+                                        );
+                                        out.collect(factOrderItem);
+                                    }
+                                }
+                        );
 
         resDS.print();
 
