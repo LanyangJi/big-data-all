@@ -80,7 +80,7 @@ public class D01_BroadcastState {
                 new MapStateDescriptor<>("user-info-map", Types.VOID, Types.MAP(Types.STRING, Types.TUPLE(Types.STRING, Types.INT)));
         BroadcastStream<Map<String, Tuple2<String, Integer>>> broadcastStream = userInfoMapDS.broadcast(descriptor);
 
-        // 早于广播配置流的事件流可能会无非被处理,这边以侧输出流单独采集输出,最后统一处理
+        // 早于广播配置流的事件流可能会无法被处理,这边以侧输出流单独采集输出,最后统一处理
         OutputTag<UserEvent> earlyEventTag = new OutputTag<UserEvent>("early-event-output-tage", Types.POJO(UserEvent.class)) {
         };
 
