@@ -36,16 +36,18 @@ public class D01_TimeWindow_Tumbling {
         // 开窗处理
         SingleOutputStreamOperator<SignalCar> windowDs = signalCarDs.keyBy(SignalCar::getSignalId)
                 .window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
-                .apply(new WindowFunction<SignalCar, SignalCar, String, TimeWindow>() {
-                    @Override
-                    public void apply(String key, TimeWindow window, Iterable<SignalCar> signalCars, Collector<SignalCar> out) throws Exception {
-                        long sum = 0L;
-                        for (SignalCar signalCar : signalCars) {
-                            sum += signalCar.getPassingCarCount();
+                .apply(
+                        new WindowFunction<SignalCar, SignalCar, String, TimeWindow>() {
+                            @Override
+                            public void apply(String key, TimeWindow window, Iterable<SignalCar> signalCars, Collector<SignalCar> out) throws Exception {
+                                long sum = 0L;
+                                for (SignalCar signalCar : signalCars) {
+                                    sum += signalCar.getPassingCarCount();
+                                }
+                                out.collect(new SignalCar(key, sum));
+                            }
                         }
-                        out.collect(new SignalCar(key, sum));
-                    }
-                });
+                );
 
         // 打印输出
         // 这边基于处理时间的窗口计算触发要求：1. 时间到了；2. 有数据
