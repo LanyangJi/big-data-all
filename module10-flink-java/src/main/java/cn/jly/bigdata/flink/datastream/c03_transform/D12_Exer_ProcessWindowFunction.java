@@ -24,6 +24,10 @@ import java.util.List;
 /**
  * 需求：监控温度传感器的温度值，如果温度值在10 秒钟之内 (event time)连续上升， 则报警。
  * 考虑乱序数据
+ * <p>
+ * 注意：ReduceFunction和AggregateFunction存空间损耗来讲，是要优于ProcessWindowFunction
+ * ReduceFunction 和 AggregateFunction 可以显着降低存储需求，因为它们急切地聚合元素并且每个窗口只存储一个值。
+ * 相比之下，仅使用 ProcessWindowFunction 需要累积所有元素。
  *
  * @author lanyangji
  * @date 2021/7/6 19:31

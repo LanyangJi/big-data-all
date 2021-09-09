@@ -29,10 +29,14 @@ import java.util.concurrent.TimeUnit;
  * 双流Join是Flink面试的高频问题。一般情况下说明以下几点就可以hold了：
  * Join大体分类只有两种：Window Join和Interval Join。
  * 1. Window Join又可以根据Window的类型细分出3种：
- * Tumbling Window Join、Sliding Window Join、Session Widnow Join。
+ * Tumbling Window Join、Sliding Window Join、Session Windnow Join。
  * Windows类型的join都是利用window的机制，先将数据缓存在Window State中，当窗口触发计算时，执行join操作；
  * 2. interval join也是利用state存储数据再处理，区别在于state中的数据有失效机制，依靠数据触发数据清理；
  * 目前Stream join的结果是数据的笛卡尔积；
+ *
+ * 关于语义的一些注意事项：
+ * 创建两个流的元素的成对组合的行为类似于内连接，这意味着如果一个流中的元素没有来自另一个流的相应元素要连接，则不会发出它们。
+ * 那些确实被加入的元素将把仍然位于各自窗口中的最大时间戳作为它们的时间戳。例如，以 [5, 10) 为边界的窗口将导致连接元素的时间戳为 9。
  *
  * @author jilanyang
  * @date 2021/8/8 19:29

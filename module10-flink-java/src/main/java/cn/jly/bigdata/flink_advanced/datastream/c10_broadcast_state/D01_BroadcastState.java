@@ -92,7 +92,7 @@ public class D01_BroadcastState {
         // 输出
         resDS.print();
 
-        // 早于广播配置流到达的事件流没有被处理,这里以侧输出流单独处理,可以选择写到某个介质中,最后单独处理)
+        // 早于广播配置流到达的事件流没有被处理,这里以侧输出流单独处理,可以选择写到某个介质中,最后单独处理
         DataStream<UserEvent> earlyEventDS = resDS.getSideOutput(earlyEventTag);
         earlyEventDS.printToErr("earlyEventDS");
 
@@ -130,7 +130,7 @@ public class D01_BroadcastState {
             ReadOnlyBroadcastState<Void, Map<String, Tuple2<String, Integer>>> broadcastState = ctx.getBroadcastState(this.descriptor);
             // 拿到广播流中的数据
             Map<String, Tuple2<String, Integer>> userInfoMap = broadcastState.get(null);
-            if (userInfoMap != null){
+            if (userInfoMap != null) {
                 // 2. 组装数据并输出--- 需求：实时过滤出配置中的用户，并在事件流中补全这批用户的基础信息。
                 if (userInfoMap.containsKey(userEvent.getUserId())) {
                     Tuple2<String, Integer> nameAndAge = userInfoMap.get(userEvent.getUserId());

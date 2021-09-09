@@ -23,6 +23,7 @@
         <module>module11-flink-scala</module>
         <module>module16-juc</module>
         <module>module12-datastructure-algorithms</module>
+        <module>module17-mapstruct</module>
     </modules>
 
     <properties>
