@@ -24,6 +24,7 @@
         <module>module16-juc</module>
         <module>module12-datastructure-algorithms</module>
         <module>module17-mapstruct</module>
+        <module>module13-redis</module>
     </modules>
 
     <properties>
