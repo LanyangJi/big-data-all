@@ -10,10 +10,25 @@ import lombok.NoArgsConstructor;
  * @createTime 2021/8/13 16:22
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Customer {
     private String id;
     private String name;
     private Integer age;
+    private Long createTime;
+
+    public Customer() {
+    }
+
+    public Customer(String id, String name, Integer age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+    }
+
+    public Customer(String id, String name, Integer age, Long createTime) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.createTime = createTime;
+    }
 }

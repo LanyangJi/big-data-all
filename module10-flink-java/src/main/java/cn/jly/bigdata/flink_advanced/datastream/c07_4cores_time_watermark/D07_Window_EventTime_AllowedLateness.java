@@ -78,16 +78,18 @@ public class D07_Window_EventTime_AllowedLateness {
         SingleOutputStreamOperator<Tuple2<String, Double>> aggregateDs = windowedDs.allowedLateness(Time.seconds(2))
                 // 在watermark设定的延迟和allowedLateness设定的延迟之后，还有迟到数据，通过次侧输出流输出
                 .sideOutputLateData(outputTag)
-                .apply(new WindowFunction<Order, Tuple2<String, Double>, String, TimeWindow>() {
-                    @Override
-                    public void apply(String key, TimeWindow window, Iterable<Order> orderIter, Collector<Tuple2<String, Double>> out) throws Exception {
-                        double sum = 0;
-                        for (Order order : orderIter) {
-                            sum += order.getMoney();
+                .apply(
+                        new WindowFunction<Order, Tuple2<String, Double>, String, TimeWindow>() {
+                            @Override
+                            public void apply(String key, TimeWindow window, Iterable<Order> orderIter, Collector<Tuple2<String, Double>> out) throws Exception {
+                                double sum = 0;
+                                for (Order order : orderIter) {
+                                    sum += order.getMoney();
+                                }
+                                out.collect(Tuple2.of(key, sum));
+                            }
                         }
-                        out.collect(Tuple2.of(key, sum));
-                    }
-                });
+                );
 
         // 打印正常的统计结果
         aggregateDs.print("normal");

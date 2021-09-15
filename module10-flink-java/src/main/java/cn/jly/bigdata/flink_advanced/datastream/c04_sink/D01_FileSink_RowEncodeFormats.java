@@ -15,6 +15,8 @@ import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.
 import java.util.concurrent.TimeUnit;
 
 /**
+ * todo 完善 flink的 file sink
+ *
  * @author jilanyang
  * @date 2021/7/26 10:11
  * @package cn.jly.bigdata.flink_advanced.datastream.c04_sink

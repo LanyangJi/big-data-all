@@ -3,7 +3,6 @@ package cn.jly.bigdata.flink_advanced.utils;
 import cn.hutool.core.collection.BoundedPriorityQueue;
 import cn.jly.bigdata.flink_advanced.datastream.beans.Order;
 import cn.jly.bigdata.flink_advanced.test.exer01.WindowFinalProcessFunction;
-import sun.plugin.javascript.navig.LinkArray;
 
 import java.util.ArrayList;
 import java.util.Comparator;

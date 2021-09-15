@@ -48,9 +48,10 @@ under the License.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.13.0</flink.version>
+        <flink.version>1.13.2</flink.version>
         <target.java.version>1.8</target.java.version>
         <scala.binary.version>2.12</scala.binary.version>
+        <scala.version>2.12.13</scala.version>
         <maven.compiler.source>${target.java.version}</maven.compiler.source>
         <maven.compiler.target>${target.java.version}</maven.compiler.target>
         <log4j.version>2.12.1</log4j.version>
@@ -58,6 +59,20 @@ under the License.
     </properties>
 
     <dependencies>
+        <!--        hbase相关依赖       -->
+        <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-client</artifactId>
+            <version>2.3.5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-server -->
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-server</artifactId>
+            <version>2.3.5</version>
+        </dependency>
+
         <!--        使用lettuce操作redis        -->
         <dependency>
             <groupId>io.lettuce</groupId>
@@ -122,6 +137,23 @@ under the License.
             <version>${flink.version}</version>
         </dependency>
 
+        <!--        flink scala     -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-scala_2.12</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table-api-scala-bridge_2.12</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
         <!--		table api & sql		-->
         <dependency>
             <groupId>org.apache.flink</groupId>
@@ -145,18 +177,18 @@ under the License.
         </dependency>
 
         <!--        flink sql整合hive     -->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.flink</groupId>-->
-<!--            <artifactId>flink-connector-hive_${scala.binary.version}</artifactId>-->
-<!--            <version>${flink.version}</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.flink</groupId>-->
+        <!--            <artifactId>flink-connector-hive_${scala.binary.version}</artifactId>-->
+        <!--            <version>${flink.version}</version>-->
+        <!--        </dependency>-->
 
-<!--        <dependency>-->
-<!--            <groupId>org.apache.hive</groupId>-->
-<!--            <artifactId>hive-exec</artifactId>-->
-<!--            <version>${hive.version}</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.apache.hive</groupId>-->
+        <!--            <artifactId>hive-exec</artifactId>-->
+        <!--            <version>${hive.version}</version>-->
+        <!--            <scope>provided</scope>-->
+        <!--        </dependency>-->
 
         <!-- flink sql连接Kafka -->
         <dependency>
@@ -283,13 +315,13 @@ under the License.
 
     <build>
         <!--        protobuf 0.5.1插件必须排序这个      -->
-<!--        <extensions>-->
-<!--            <extension>-->
-<!--                <groupId>kr.motd.maven</groupId>-->
-<!--                <artifactId>os-maven-plugin</artifactId>-->
-<!--                <version>1.5.0.Final</version>-->
-<!--            </extension>-->
-<!--        </extensions>-->
+        <!--        <extensions>-->
+        <!--            <extension>-->
+        <!--                <groupId>kr.motd.maven</groupId>-->
+        <!--                <artifactId>os-maven-plugin</artifactId>-->
+        <!--                <version>1.5.0.Final</version>-->
+        <!--            </extension>-->
+        <!--        </extensions>-->
 
         <plugins>
 
@@ -342,7 +374,8 @@ under the License.
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>
-                                        cn.jly.bigdata.flink.datastream.c01_quickstart.D05_DataStreamApi_lambda_yarn
+<!--                                        cn.jly.bigdata.flink.datastream.c01_quickstart.D05_DataStreamApi_lambda_yarn-->
+                                        cn.jly.bigdata.flink_advanced.monitor.D01_Flink_Metrics
                                     </mainClass>
                                 </transformer>
                             </transformers>
@@ -352,14 +385,42 @@ under the License.
             </plugin>
 
             <!-- protobuf 编译组件 -->
+            <!--            <plugin>-->
+            <!--                <groupId>org.xolstice.maven.plugins</groupId>-->
+            <!--                <artifactId>protobuf-maven-plugin</artifactId>-->
+            <!--                <version>0.5.1</version>-->
+            <!--                <extensions>true</extensions>-->
+            <!--                <configuration>-->
+            <!--                    <protoSourceRoot>${project.basedir}/src/main/protobuf</protoSourceRoot>-->
+            <!--                    <protocArtifact>com.google.protobuf:protoc:3.9.1:exe:${os.detected.classifier}</protocArtifact>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <goals>-->
+            <!--                            <goal>compile</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
+
+            <!-- protobuf 编译组件 -->
 <!--            <plugin>-->
 <!--                <groupId>org.xolstice.maven.plugins</groupId>-->
 <!--                <artifactId>protobuf-maven-plugin</artifactId>-->
-<!--                <version>0.5.1</version>-->
-<!--                <extensions>true</extensions>-->
+<!--                <version>0.6.1</version>-->
 <!--                <configuration>-->
+<!--                    <protocExecutable>-->
+<!--                        &lt;!&ndash; 刚刚环境变量配置的位置 D:\software\devsoft\protoc-3.17.1-win64\bin\protoc.exe;-->
+<!--                         C:\software\dev\protoc-3.17.3-win64\bin\protoc.exe &ndash;&gt;-->
+<!--                        D:\software\protoc-3.17.3-win64\bin\protoc.exe-->
+<!--                    </protocExecutable>-->
+<!--                    <pluginId>protoc-java</pluginId>-->
+<!--                    &lt;!&ndash; proto文件放置的目录 &ndash;&gt;-->
 <!--                    <protoSourceRoot>${project.basedir}/src/main/protobuf</protoSourceRoot>-->
-<!--                    <protocArtifact>com.google.protobuf:protoc:3.9.1:exe:${os.detected.classifier}</protocArtifact>-->
+<!--                    &lt;!&ndash; 生成文件的目录 &ndash;&gt;-->
+<!--                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>-->
+<!--                    &lt;!&ndash; 生成文件前是否把目标目录清空，这个最好设置为false，以免误删项目文件 &ndash;&gt;-->
+<!--                    <clearOutputDirectory>false</clearOutputDirectory>-->
 <!--                </configuration>-->
 <!--                <executions>-->
 <!--                    <execution>-->
@@ -369,34 +430,6 @@ under the License.
 <!--                    </execution>-->
 <!--                </executions>-->
 <!--            </plugin>-->
-
-            <!-- protobuf 编译组件 -->
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
-                <configuration>
-                    <protocExecutable>
-                        <!-- 刚刚环境变量配置的位置 D:\software\devsoft\protoc-3.17.1-win64\bin\protoc.exe;
-                         C:\software\dev\protoc-3.17.3-win64\bin\protoc.exe -->
-                        D:\software\protoc-3.17.3-win64\bin\protoc.exe
-                    </protocExecutable>
-                    <pluginId>protoc-java</pluginId>
-                    <!-- proto文件放置的目录 -->
-                    <protoSourceRoot>${project.basedir}/src/main/protobuf</protoSourceRoot>
-                    <!-- 生成文件的目录 -->
-                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-                    <!-- 生成文件前是否把目标目录清空，这个最好设置为false，以免误删项目文件 -->
-                    <clearOutputDirectory>false</clearOutputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
 
         <pluginManagement>

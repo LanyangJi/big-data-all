@@ -57,7 +57,7 @@ public class D08_SlidingTimeWindow {
         // 允许迟到5秒钟，窗口触发的时候先输出一个计算结果，但是不关闭窗口，等再过一分钟后，将迟到的数据参与聚合后输出计算结果
         // 来一条迟到数据，就在原来的窗口结果上聚合计算一次  -> 保证快速和计算结果的正确性
         // 这种场景一般都是基于event time才有意义
-        OutputTag<Tuple2<String, Double>> lateOutputData = new OutputTag<>("late_date");
+        OutputTag<Tuple2<String, Double>> lateOutputData = new OutputTag<Tuple2<String, Double>>("late_date"){};
         SingleOutputStreamOperator<Long> aggregateDS = windowDS.allowedLateness(Time.seconds(5))
                 .sideOutputLateData(lateOutputData) // 将迟到超过5秒的数据写入侧输出流
                 .aggregate(new CountAggregationFunction());

@@ -13,6 +13,7 @@ public class D02_ReadTextFile {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
+        // env.readTextFile(本地/HDFS文件/文件夹);//压缩文件也可以
         DataStreamSource<String> inputDataStream = env.readTextFile("input/word.txt");
 
         inputDataStream.print();

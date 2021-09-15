@@ -21,10 +21,12 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import org.apache.flink.streaming.connectors.kafka.internals.KafkaSerializationSchemaWrapper;
 import org.apache.flink.streaming.connectors.kafka.internals.KeyedSerializationSchemaWrapper;
 import org.apache.flink.util.Collector;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
 import java.util.Properties;
@@ -72,9 +74,9 @@ import java.util.Properties;
  * @author jilanyang
  * @date 2021/8/9 21:43
  * @package cn.jly.bigdata.flink_advanced.datastream.c12_fault_tolerance
- * @class D01_Exactly_Once
+ * @class D01_Exactly_Once_On_Kafka
  */
-public class D01_Exactly_Once {
+public class D01_Exactly_Once_On_Kafka {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
@@ -127,53 +129,88 @@ public class D01_Exactly_Once {
 
         String brokers = "linux01:9092";
 
-        // flink kafka source
-        KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
-                .setBootstrapServers(brokers)
-                .setTopics("test")
-                .setGroupId("lanyangji")
-                .setStartingOffsets(OffsetsInitializer.latest())
-                .setValueOnlyDeserializer(new SimpleStringSchema())
-                .build();
-        DataStreamSource<String> kafkaDS = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "kafka_source");
+        // flink kafka source - 新的方式
+//        KafkaSource<String> kafkaSource = KafkaSource.<String>builder()
+//                .setBootstrapServers(brokers)
+//                .setTopics("test")
+//                .setGroupId("lanyangji")
+//                .setStartingOffsets(OffsetsInitializer.latest())
+//                .setValueOnlyDeserializer(new SimpleStringSchema())
+//                .build();
+//        DataStreamSource<String> kafkaDS = env.fromSource(kafkaSource, WatermarkStrategy.noWatermarks(), "kafka_source");
+
+        // kafka source - 传统的方式
+        Properties sourceProperties = new Properties();
+        // kafka集群地址
+        sourceProperties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
+        // 消费者id
+        sourceProperties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "lanyangji");
+        // 有offset记录从记录位置开始消费，没有则从latest开始消费；earliest有offset记录则从记录位置开始消费，没有则从earliest位置开始消费
+        sourceProperties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        // 会开启一个后台进程，每隔5秒检测一下分区情况，实现动态分区检测
+        sourceProperties.setProperty("flink.partition-discovery.interval-millis", "5000");
+        // 自动提交（提交到默认主题，随着checkpoint存储在checkpoint（为了容错）和默认主题（为了方便外部工具获取）中）
+        sourceProperties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        // 自动提交的时间间隔
+        sourceProperties.setProperty(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "2000");
+
+        // FlinkKafkaConsumer里面实现了CheckpointedFunction,里面实现了offset的维护
+        FlinkKafkaConsumer<String> kafkaSource = new FlinkKafkaConsumer<>(
+                "test",
+                new SimpleStringSchema(),
+                sourceProperties
+        );
+        // 在做checkpoint的时候提交offset(为了容错)，默认就是true
+        kafkaSource.setCommitOffsetsOnCheckpoints(true);
+
+        DataStreamSource<String> kafkaDS = env.addSource(kafkaSource);
 
         // transformation
-        SingleOutputStreamOperator<String> resDS = kafkaDS.flatMap(new FlatMapFunction<String, WordAndCount>() {
-            @Override
-            public void flatMap(String value, Collector<WordAndCount> out) throws Exception {
-                String[] words = value.split(",");
-                for (String word : words) {
-                    out.collect(new WordAndCount(word, 1L));
-                }
-            }
-        })
+        SingleOutputStreamOperator<String> resDS = kafkaDS.flatMap(
+                        new FlatMapFunction<String, WordAndCount>() {
+                            @Override
+                            public void flatMap(String value, Collector<WordAndCount> out) throws Exception {
+                                String[] words = value.split(",");
+                                for (String word : words) {
+                                    out.collect(new WordAndCount(word, 1L));
+                                }
+                            }
+                        }
+                )
                 .keyBy(WordAndCount::getWord)
-                .reduce(new ReduceFunction<WordAndCount>() {
-                    @Override
-                    public WordAndCount reduce(WordAndCount wc1, WordAndCount wc2) throws Exception {
-                        wc1.setCount(wc1.getCount() + wc2.getCount());
-                        return wc1;
-                    }
-                })
-                .map(new MapFunction<WordAndCount, String>() {
-                    @Override
-                    public String map(WordAndCount value) throws Exception {
-                        return JSON.toJSONString(value);
-                    }
-                });
+                .reduce(
+                        new ReduceFunction<WordAndCount>() {
+                            @Override
+                            public WordAndCount reduce(WordAndCount wc1, WordAndCount wc2) throws Exception {
+                                wc1.setCount(wc1.getCount() + wc2.getCount());
+                                return wc1;
+                            }
+                        }
+                )
+                .map(
+                        new MapFunction<WordAndCount, String>() {
+                            @Override
+                            public String map(WordAndCount value) throws Exception {
+                                return JSON.toJSONString(value);
+                            }
+                        }
+                );
 
 
         // flink kafka sink - 后期项目中使用自定义的序列化规则
         Properties properties = new Properties();
         properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
+        properties.setProperty(ProducerConfig.TRANSACTION_TIMEOUT_CONFIG, "5000"); // 设置事务的超时时间
+        // 实现了TwoPhaseCommitSinkFunction（两阶段提交），两阶段提交又实现了CheckpointedFunction
         FlinkKafkaProducer<String> kafkaProducer = new FlinkKafkaProducer<>(
                 "my-topic",                  // target topic
                 new KeyedSerializationSchemaWrapper<>(new SimpleStringSchema()),    // serialization schema
                 properties,                  // producer config
-                FlinkKafkaProducer.Semantic.EXACTLY_ONCE); // fault-tolerance
+                FlinkKafkaProducer.Semantic.EXACTLY_ONCE
+        ); // fault-tolerance
         resDS.addSink(kafkaProducer);
 
-        env.execute("D01_Exactly_Once");
+        env.execute("D01_Exactly_Once_On_Kafka");
     }
 
     @Data
