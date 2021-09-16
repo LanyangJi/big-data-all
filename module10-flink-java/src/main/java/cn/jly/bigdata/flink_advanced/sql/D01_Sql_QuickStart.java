@@ -37,28 +37,28 @@ import org.apache.flink.types.Row;
  * @createTime 2021/8/20 17:04
  */
 public class D01_Sql_QuickStart {
-    @SneakyThrows
-    public static void main(String[] args) {
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
-        env.setParallelism(1);
+	@SneakyThrows
+	public static void main(String[] args) {
+		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
+		env.setParallelism(1);
 
-        StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
+		StreamTableEnvironment tableEnv = StreamTableEnvironment.create(env);
 
-        // 展示所有支持的函数
-        TableResult result = tableEnv.executeSql("show functions");
-        result.print();
+		// 展示所有支持的函数
+		TableResult result = tableEnv.executeSql("show functions");
+		result.print();
 
-        TableResult showTables = tableEnv.executeSql("show tables");
-        showTables.print();
+		TableResult showTables = tableEnv.executeSql("show tables");
+		showTables.print();
 
-        Table table = tableEnv.sqlQuery("select 'hello world' as greet");
-        tableEnv.toAppendStream(table, Row.class).printToErr("query");
+		Table table = tableEnv.sqlQuery("select 'hello world' as greet");
+		tableEnv.toAppendStream(table, Row.class).printToErr("query");
 
-        // 这些函数在开发 SQL 查询时为用户提供了强大的功能工具箱。例如，CURRENT_TIMESTAMP 将打印机器在执行时的当前系统时间——UTC时间，比本地时区晚8小时
-        Table table2 = tableEnv.sqlQuery("select current_timestamp as process_time");
-        tableEnv.toAppendStream(table2, Row.class).printToErr("process_time");
+		// 这些函数在开发 SQL 查询时为用户提供了强大的功能工具箱。例如，CURRENT_TIMESTAMP 将打印机器在执行时的当前系统时间——UTC时间，比本地时区晚8小时
+		Table table2 = tableEnv.sqlQuery("select current_timestamp as process_time");
+		tableEnv.toAppendStream(table2, Row.class).printToErr("process_time");
 
-        env.execute("D01_Sql_QuickStart");
-    }
+		env.execute("D01_Sql_QuickStart");
+	}
 }
