@@ -1,154 +1,165 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>big-data-all</artifactId>
-        <groupId>cn.jly.bigdata</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>big-data-all</artifactId>
+    <groupId>cn.jly.bigdata</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>module09-spark3</artifactId>
+  <artifactId>module09-spark3</artifactId>
 
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
+  <properties>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <spark.version>3.0.0</spark.version>
+    <scala.version>2.12</scala.version>
+    <scala.binary.version>2.12.10</scala.binary.version>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.12</artifactId>
-            <version>3.0.0</version>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.12</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <!-- spark sql整合hive -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_2.12</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-exec</artifactId>
-            <version>3.1.2</version>
-        </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <!-- spark sql整合hive -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>3.1.2</version>
+    </dependency>
 
-        <!-- structured streaming整合kafka source -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
-            <version>3.0.0</version>
-        </dependency>
+    <!-- structured streaming整合kafka source -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql-kafka-0-10_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
 
-        <!--        spark streaming     -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_2.12</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <!-- spark streaming 整合 kafka -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka-0-10_2.12</artifactId>
-            <version>3.0.0</version>
-        </dependency>
+    <!--        spark streaming     -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <!-- spark streaming 整合 kafka -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming-kafka-0-10_${scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
 
-        <!--        解决 spark sql: ClassNotFoundException: com.fasterxml.jackson.core.exc.InputCoercionException-->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.10.0</version>
-        </dependency>
+    <!-- 解决bug: Exception in thread "main" java.lang.NoSuchMethodError:
+    org.apache.hadoop.security.HadoopKerberosName.setRuleMechanism(Ljava/lang/String;)V -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-auth</artifactId>
+      <version>3.3.1</version>
+    </dependency>
 
-        <!-- scala类进行json序列化的工具类 -->
-        <!-- https://mvnrepository.com/artifact/org.json4s/json4s-native -->
-        <dependency>
-            <groupId>org.json4s</groupId>
-            <artifactId>json4s-native_2.12</artifactId>
-            <version>3.6.6</version>
-        </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.json4s</groupId>-->
-        <!--            <artifactId>json4s-native_2.12</artifactId>-->
-        <!--            <version>4.0.0</version>-->
-        <!--        </dependency>-->
+    <!--        解决 spark sql: ClassNotFoundException: com.fasterxml.jackson.core.exc.InputCoercionException-->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.10.0</version>
+    </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>2.12.10</version>
-        </dependency>
+    <!-- scala类进行json序列化的工具类 -->
+    <!-- https://mvnrepository.com/artifact/org.json4s/json4s-native -->
+    <dependency>
+      <groupId>org.json4s</groupId>
+      <artifactId>json4s-native_${scala.version}</artifactId>
+      <version>3.6.6</version>
+    </dependency>
+    <!--        <dependency>-->
+    <!--            <groupId>org.json4s</groupId>-->
+    <!--            <artifactId>json4s-native_${scala.version}</artifactId>-->
+    <!--            <version>4.0.0</version>-->
+    <!--        </dependency>-->
 
-        <!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid</artifactId>
-            <version>1.2.6</version>
-        </dependency>
+    <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.binary.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.49</version>
-        </dependency>
-    </dependencies>
-    <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <plugins>
-            <!--            指定编译Java的插件     -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
-            </plugin>
-            <!-- 该插件用于将 Scala 代码编译成 class 文件 -->
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>3.2.2</version>
-                <executions>
-                    <execution>
-                        <!-- 声明绑定到 maven 的 compile 阶段 -->
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>cn.spark.core.quickstart.WordCountDemo.scala</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>druid</artifactId>
+      <version>1.2.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.49</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <plugins>
+      <!--            指定编译Java的插件     -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+      </plugin>
+      <!-- 该插件用于将 Scala 代码编译成 class 文件 -->
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.2.2</version>
+        <executions>
+          <execution>
+            <!-- 声明绑定到 maven 的 compile 阶段 -->
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>cn.spark.core.quickstart.WordCountDemo.scala</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
