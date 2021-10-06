@@ -8,7 +8,11 @@ import org.apache.spark.{SparkConf, SparkContext}
  */
 object D01_WorldCount {
   def main(args: Array[String]): Unit = {
-    System.setProperty("hadoop.home.dir", "D:\\JLY\\hadoop2.6_Win_x64")
+    if (args.length < 1) {
+      throw new Exception("hadoop path is null")
+    } else {
+      System.setProperty("hadoop.home.dir", args(0))
+    }
 
     val sparkConf: SparkConf = new SparkConf().setAppName("D01_WorldCount").setMaster("local[*]")
     val sc: SparkContext = new SparkContext(sparkConf)

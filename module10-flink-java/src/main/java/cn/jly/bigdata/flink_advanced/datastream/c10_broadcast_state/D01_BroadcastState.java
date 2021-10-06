@@ -30,24 +30,16 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * 在开发过程中，如果遇到需要下发/广播配置、规则等低吞吐事件流到下游所有 task 时，就可以使用 Broadcast State。
- * Broadcast State 是 Flink 1.5 引入的新特性。
- * 下游的 task 接收这些配置、规则并保存为 BroadcastState, 将这些配置应用到另一个数据流的计算中 。
+ * 在开发过程中，如果遇到需要下发/广播配置、规则等低吞吐事件流到下游所有 task 时，就可以使用 Broadcast State。 Broadcast State 是 Flink 1.5 引入的新特性。 下游的 task 接收这些配置、规则并保存为
+ * BroadcastState, 将这些配置应用到另一个数据流的计算中 。
  * <p>
- * 场景举例
- * 1) 动态更新计算规则: 如事件流需要根据最新的规则进行计算，则可将规则作为广播状态广播到下游Task中。
- * 2）实时增加额外字段: 如事件流需要实时增加用户的基础信息，则可将用户的基础信息作为广播状态广播到下游Task中。
+ * 场景举例 1) 动态更新计算规则: 如事件流需要根据最新的规则进行计算，则可将规则作为广播状态广播到下游Task中。 2）实时增加额外字段: 如事件流需要实时增加用户的基础信息，则可将用户的基础信息作为广播状态广播到下游Task中。
  * <p>
- * 需求：
- * 实时过滤出配置中的用户，并在事件流中补全这批用户的基础信息。
- * 1. 事件流：表示用户在某个时刻浏览或点击了某个商品，格式如下。
- * {"userID": "user_3", "eventTime": "2019-08-17 12:19:47", "eventType": "browse", "productID": 1}
- * {"userID": "user_2", "eventTime": "2019-08-17 12:19:48", "eventType": "click", "productID": 1}
- * 2. mysql中存储的用户信息，成为配置流、规则流或者用户信息流：
- * <id, name, age>
+ * 需求： 实时过滤出配置中的用户，并在事件流中补全这批用户的基础信息。 1. 事件流：表示用户在某个时刻浏览或点击了某个商品，格式如下。 {"userID": "user_3", "eventTime": "2019-08-17 12:19:47", "eventType":
+ * "browse", "productID": 1} {"userID": "user_2", "eventTime": "2019-08-17 12:19:48", "eventType": "click", "productID": 1} 2.
+ * mysql中存储的用户信息，成为配置流、规则流或者用户信息流： <id, name, age>
  * <p>
- * 要求输出：
- * <userId, productId, eventTime, eventType, name, age>
+ * 要求输出： <userId, productId, eventTime, eventType, name, age>
  *
  * @author jilanyang
  * @date 2021/8/8 15:29
@@ -55,6 +47,7 @@ import java.util.Random;
  * @class D01_BroadcastState
  */
 public class D01_BroadcastState {
+
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setRuntimeMode(RuntimeExecutionMode.AUTOMATIC);
@@ -65,19 +58,16 @@ public class D01_BroadcastState {
         //userEventDS.print();
 
         // mysql中的配置流/规则流/用户信息流 <userId, <name, age>> - 数据量较小
-        DataStreamSource<Map<String, Tuple2<String, Integer>>> userInfoMapDS = env.addSource(new MysqlUserInfoSourceFunction(
-                "jdbc:mysql://linux01:3306/test",
-                "root",
-                "123456"
-        ));
+        DataStreamSource<Map<String, Tuple2<String, Integer>>> userInfoMapDS = env
+                .addSource(new MysqlUserInfoSourceFunction("jdbc:mysql://linux01:3306/test", "root", "123456"));
         //userInfoMapDS.printToErr();
 
         // 广播配置流
         // map状态描述符
         //MapStateDescriptor<String, Tuple2<String, Integer>> descriptor =
         //        new MapStateDescriptor<>("user-info_map", Types.STRING, Types.TUPLE(Types.STRING, Types.INT));
-        MapStateDescriptor<Void, Map<String, Tuple2<String, Integer>>> descriptor =
-                new MapStateDescriptor<>("user-info-map", Types.VOID, Types.MAP(Types.STRING, Types.TUPLE(Types.STRING, Types.INT)));
+        MapStateDescriptor<Void, Map<String, Tuple2<String, Integer>>> descriptor = new MapStateDescriptor<>("user-info-map", Types.VOID,
+                Types.MAP(Types.STRING, Types.TUPLE(Types.STRING, Types.INT)));
         BroadcastStream<Map<String, Tuple2<String, Integer>>> broadcastStream = userInfoMapDS.broadcast(descriptor);
 
         // 早于广播配置流的事件流可能会无法被处理,这边以侧输出流单独采集输出,最后统一处理
@@ -86,8 +76,10 @@ public class D01_BroadcastState {
 
         // 两个流连接
         BroadcastConnectedStream<UserEvent, Map<String, Tuple2<String, Integer>>> connectDS = userEventDS.connect(broadcastStream);
-        SingleOutputStreamOperator<Tuple6<String, String, String, String, String, Integer>> resDS =
-                connectDS.process(new AddUserInfoBroadcastProcessFunction(descriptor, earlyEventTag));
+
+        // BroadcastProcessFunction
+        SingleOutputStreamOperator<Tuple6<String, String, String, String, String, Integer>> resDS = connectDS
+                .process(new AddUserInfoBroadcastProcessFunction(descriptor, earlyEventTag));
 
         // 输出
         resDS.print();
@@ -100,17 +92,17 @@ public class D01_BroadcastState {
     }
 
     /**
-     * 自定义BroadcastProcessFunction
-     * 需求：实时过滤出配置中的用户，并在事件流中补全这批用户的基础信息。
+     * 自定义BroadcastProcessFunction 需求：实时过滤出配置中的用户，并在事件流中补全这批用户的基础信息。
      */
-    public static class AddUserInfoBroadcastProcessFunction
-            extends BroadcastProcessFunction<UserEvent, Map<String, Tuple2<String, Integer>>, Tuple6<String, String, String, String, String, Integer>> {
+    public static class AddUserInfoBroadcastProcessFunction extends
+            BroadcastProcessFunction<UserEvent, Map<String, Tuple2<String, Integer>>, Tuple6<String, String, String, String, String, Integer>> {
 
         private final MapStateDescriptor<Void, Map<String, Tuple2<String, Integer>>> descriptor;
 
         private final OutputTag<UserEvent> earlyEventTag;
 
-        public AddUserInfoBroadcastProcessFunction(MapStateDescriptor<Void, Map<String, Tuple2<String, Integer>>> descriptor, OutputTag<UserEvent> earlyEventTag) {
+        public AddUserInfoBroadcastProcessFunction(MapStateDescriptor<Void, Map<String, Tuple2<String, Integer>>> descriptor,
+                                                   OutputTag<UserEvent> earlyEventTag) {
             this.descriptor = descriptor;
             this.earlyEventTag = earlyEventTag;
         }
@@ -124,7 +116,8 @@ public class D01_BroadcastState {
          * @throws Exception
          */
         @Override
-        public void processElement(UserEvent userEvent, ReadOnlyContext ctx, Collector<Tuple6<String, String, String, String, String, Integer>> out) throws Exception {
+        public void processElement(UserEvent userEvent, ReadOnlyContext ctx,
+                                   Collector<Tuple6<String, String, String, String, String, Integer>> out) throws Exception {
             // 目标是为了将事件流中的数据和广播流的数据进行关联,进而输出<userId, productId, eventTime, eventType, name, age>
             // 1. 获取广播流 - 只读的
             ReadOnlyBroadcastState<Void, Map<String, Tuple2<String, Integer>>> broadcastState = ctx.getBroadcastState(this.descriptor);
@@ -135,7 +128,9 @@ public class D01_BroadcastState {
                 if (userInfoMap.containsKey(userEvent.getUserId())) {
                     Tuple2<String, Integer> nameAndAge = userInfoMap.get(userEvent.getUserId());
                     // 输出
-                    out.collect(Tuple6.of(userEvent.getUserId(), userEvent.getProductId(), userEvent.getEventTime(), userEvent.getEventType(), nameAndAge.f0, nameAndAge.f1));
+                    out.collect(
+                            Tuple6.of(userEvent.getUserId(), userEvent.getProductId(), userEvent.getEventTime(), userEvent.getEventType(), nameAndAge.f0, nameAndAge.f1)
+                    );
                 }
             } else {
                 // 这边有一个问题,假设事件流的数据已经到来,但是下面processBroadcastElement方法更新状态的数据发生在之后,这就可能导致早于广播状态更新之前的事件流没有被处理(收集)
@@ -153,7 +148,8 @@ public class D01_BroadcastState {
          * @throws Exception
          */
         @Override
-        public void processBroadcastElement(Map<String, Tuple2<String, Integer>> map, Context ctx, Collector<Tuple6<String, String, String, String, String, Integer>> out) throws Exception {
+        public void processBroadcastElement(Map<String, Tuple2<String, Integer>> map, Context ctx,
+                                            Collector<Tuple6<String, String, String, String, String, Integer>> out) throws Exception {
             // map就是最新的广播数据(从mysql中每隔5s查询来的并广播到状态中的数据)
             // 所以这里要做的就是把数据广播到状态中
             // 1. 先获取状态中已有的数据
@@ -166,10 +162,10 @@ public class D01_BroadcastState {
     }
 
     /**
-     * 从Mysql中定时查询用户信息的数据源
-     * 每次输出一个全量用户map, key：userId, value:<name, age>
+     * 从Mysql中定时查询用户信息的数据源 每次输出一个全量用户map, key：userId, value:<name, age>
      */
     public static class MysqlUserInfoSourceFunction extends RichSourceFunction<Map<String, Tuple2<String, Integer>>> {
+
         private final String jdbcUrl;
         private final String username;
         private final String password;
@@ -233,6 +229,7 @@ public class D01_BroadcastState {
      * 用户事件流
      */
     public static class UserEventSourceFunction extends RichParallelSourceFunction<UserEvent> {
+
         private boolean flag = true;
         private final Random random = new Random();
         private final FastDateFormat dateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
@@ -265,6 +262,7 @@ public class D01_BroadcastState {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserEvent {
+
         private String userId;
         private String productId;
         private String eventTime;
